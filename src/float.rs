@@ -1,20 +1,17 @@
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 
 pub trait Floor {
-    type Output;
-    fn floor(self) -> Self::Output;
+    fn floor(self) -> Self;
 }
 
 impl Floor for f32 {
-    type Output = Self;
-    fn floor(self) -> Self::Output {
+    fn floor(self) -> Self {
         self.floor()
     }
 }
 
 impl Floor for f64 {
-    type Output = Self;
-    fn floor(self) -> Self::Output {
+    fn floor(self) -> Self {
         self.floor()
     }
 }
@@ -35,16 +32,40 @@ impl AsIndex for f64 {
     }
 }
 
+pub trait NearlyEq {
+    fn nearly_eq(self, r: Self) -> bool;
+}
+
+impl NearlyEq for f32 {
+    fn nearly_eq(self, r: Self) -> bool {
+        (r - self).abs() < std::f32::EPSILON
+    }
+}
+
+impl NearlyEq for f64 {
+    fn nearly_eq(self, r: Self) -> bool {
+        (r - self).abs() < std::f64::EPSILON
+    }
+}
+
 pub trait Float<T = Self>:
     Add<T, Output = T>
+    + AddAssign<T>
     + Mul<T, Output = T>
+    + MulAssign<T>
+    + Div<T, Output = T>
+    + DivAssign<T>
     + Sub<T, Output = T>
+    + Neg<Output = T>
     + PartialEq
     + PartialOrd
     + Copy
-    + Floor<Output = T>
+    + Floor
     + AsIndex
+    + NearlyEq
     + From<f32>
+    + From<u16>
+    + Default
 {
 }
 

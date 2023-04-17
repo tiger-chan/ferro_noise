@@ -1,4 +1,5 @@
-use super::{algorithm::*, Float, Floor, Noise1D};
+use super::Noise;
+use crate::{algorithm::*, float::Float};
 
 mod details {
     use super::Float;
@@ -92,6 +93,82 @@ mod details {
         let h: usize = hash & 15; // Convert lo 4 bits of hash code
         GRADIENT_1D[h].into() // * x;
     }
+
+    pub fn gradient_2d<T>(hash: usize, x: T, y: T) -> T
+    where
+        T: Float,
+    {
+        let h = hash & 7; // Convert lo 3 bits of hash code
+        match h {
+            0 => x,
+            1 => x + y,
+            2 => y,
+            3 => -x + y,
+            4 => -x,
+            5 => -x - y,
+            6 => -y,
+            7 => x - y,
+            _ => T::from(0.0),
+        }
+    }
+
+    fn gradient_3d_a<T>(hash: usize, x: T, y: T, z: T) -> T
+    where
+        T: Float,
+    {
+        match hash & 15 {
+            // 12 cube midpoints
+            0 => x + z,
+            1 => x + y,
+            2 => y + z,
+            3 => -x + y,
+            4 => -x + z,
+            5 => -x - y,
+            6 => -y + z,
+            7 => x - y,
+            8 => x - z,
+            9 => y - z,
+            10 => -x - z,
+            11 => -y - z,
+            // 4 vertices of regular tetrahedron
+            12 => x + y,
+            13 => -x + y,
+            14 => -y + z,
+            15 => -y - z,
+            // This can't happen
+            _ => T::from(0.0),
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn gradient_3d_b<T>(hash: usize, x: T, y: T, z: T) -> T
+    where
+        T: Float,
+    {
+        // this seems like it would be slower to compute compared to version A (above).
+        // https://mrl.nyu.edu/~perlin/noise/
+        // Convert lo 4 bits of hash code into 12 gradient directions.
+        let h = hash & 15;
+        let u = if h < 8 { x } else { y };
+        let v = if h < 4 {
+            y
+        } else if h == 12 || h == 14 {
+            x
+        } else {
+            z
+        };
+
+        let f = if (h & 1) == 0 { u } else { -u };
+        let g = if (h & 2) == 0 { v } else { -v };
+        f + g
+    }
+
+    pub fn gradient_3d<T>(hash: usize, x: T, y: T, z: T) -> T
+    where
+        T: Float,
+    {
+        gradient_3d_a(hash, x, y, z)
+    }
 }
 
 type Blender<T> = fn(T) -> T;
@@ -102,29 +179,35 @@ pub struct Perlin<T: Float> {
 }
 
 impl<T: Float> Perlin<T> {
+    #[allow(dead_code)]
     pub fn new(blender: Blender<T>) -> Self {
         Perlin {
-            perm: details::PERLIN_PERMUTATIONS,
+            perm: details::PERLIN_PERMUTATIONS.clone(),
             blender: blender,
         }
     }
 
+    #[allow(dead_code)]
     pub fn new_from_seed(blender: Blender<T>, seed: u64) -> Self {
         Perlin {
             perm: details::perlin_permutation_seeded(seed),
             blender: blender,
         }
     }
+
+    fn fade(&self, v: T) -> T {
+        (self.blender)(v)
+    }
 }
 
-impl<T: Float> Noise1D<T> for Perlin<T> {
-    fn eval(&self, x: T) -> T {
+impl<T: Float> Noise<T> for Perlin<T> {
+    fn sample_1d(&mut self, x: T) -> T {
         const INDEX_MASK: usize = 255;
         let x0 = x.floor();
         let x1 = x0 + T::from(1.0);
 
         let dx = x - x0;
-        let u = (self.blender)(dx);
+        let u = self.fade(dx);
 
         let a = self.perm[x0.as_index() & INDEX_MASK];
         let b = self.perm[x1.as_index() & INDEX_MASK];
@@ -136,6 +219,102 @@ impl<T: Float> Noise1D<T> for Perlin<T> {
         let p1 = gx1 * (x - x1);
         lerp(p0, p1, u)
     }
+
+    fn sample_2d(&mut self, x: T, y: T) -> T {
+        const INDEX_MASK: usize = 255;
+        let x0 = x.floor();
+        let y0 = y.floor();
+        let xi = x0.as_index() & INDEX_MASK;
+        let yi = y0.as_index() & INDEX_MASK;
+        let x0 = x - x0;
+        let y0 = y - y0;
+        let x1 = x0 - T::from(1.0);
+        let y1 = y0 - T::from(1.0);
+
+        let aa = self.perm[xi] + yi;
+        let ab = aa + 1;
+        let ba = self.perm[xi + 1] + yi;
+        let bb = ba + 1;
+
+        let u = self.fade(x0);
+        let v = self.fade(y0);
+
+        let l1 = lerp(
+            details::gradient_2d(self.perm[aa], x0, y0),
+            details::gradient_2d(self.perm[ba], x1, y0),
+            u,
+        );
+        let l2 = lerp(
+            details::gradient_2d(self.perm[ab], x0, y1),
+            details::gradient_2d(self.perm[bb], x1, y1),
+            u,
+        );
+
+        lerp(l1, l2, v)
+    }
+
+    fn sample_3d(&mut self, x: T, y: T, z: T) -> T {
+        const INDEX_MASK: usize = 255;
+        // https://mrl.nyu.edu/~perlin/noise/
+        // Find unit cube that contains point.
+        let x0 = x.floor();
+        let y0 = y.floor();
+        let z0 = z.floor();
+        let xi = x0.as_index() & INDEX_MASK;
+        let yi = y0.as_index() & INDEX_MASK;
+        let zi = z0.as_index() & INDEX_MASK;
+
+        //  Find relative x,y,z of point in cube.
+        let x0 = x - x0;
+        let y0 = y - y0;
+        let z0 = z - z0;
+        let x1 = x0 - T::from(1.0);
+        let y1 = y0 - T::from(1.0);
+        let z1 = z0 - T::from(1.0);
+
+        // Hash coordinates of the 8 cube corners
+        let a = self.perm[xi] + yi;
+        let aa = self.perm[a] + zi;
+        let ab = self.perm[a + 1] + zi;
+        let b = self.perm[xi + 1] + yi;
+        let ba = self.perm[b] + zi;
+        let bb = self.perm[b + 1] + zi;
+
+        // Compute fade curves for each of x,y,z.
+        let u = self.fade(x0);
+        let v = self.fade(y0);
+        let w = self.fade(z0);
+
+        // And add blended results from 8 corners of cube
+        let lu1 = lerp(
+            details::gradient_3d(self.perm[aa], x0, y0, z0),
+            details::gradient_3d(self.perm[ba], x1, y0, z0),
+            u,
+        );
+
+        let lu2 = lerp(
+            details::gradient_3d(self.perm[ab], x0, y1, z0),
+            details::gradient_3d(self.perm[bb], x1, y1, z0),
+            u,
+        );
+
+        let lu3 = lerp(
+            details::gradient_3d(self.perm[aa + 1], x0, y0, z1),
+            details::gradient_3d(self.perm[ba + 1], x1, y0, z1),
+            u,
+        );
+
+        let lu4 = lerp(
+            details::gradient_3d(self.perm[ab + 1], x0, y1, z1),
+            details::gradient_3d(self.perm[bb + 1], x1, y1, z1),
+            u,
+        );
+
+        let lv1 = lerp(lu1, lu2, v);
+        let lv2 = lerp(lu3, lu4, v);
+
+        lerp(lv1, lv2, w)
+    }
 }
 
 #[cfg(test)]
@@ -146,21 +325,21 @@ mod tests {
 
     #[test]
     fn perlin_tests() {
-		let perlin = Perlin::<f32>::new(algorithm::quintic_curve);
-		let result = perlin.eval(0.0);
-		assert_eq!(result, 0.0);
+        let mut perlin = Perlin::<f32>::new(algorithm::quintic_curve);
+        let result = perlin.sample_1d(0.0);
+        assert_eq!(result, 0.0);
 
-		let result = perlin.eval(0.1);
-		assert_eq!(result, -0.004689);
-	}
+        let result = perlin.sample_1d(0.1);
+        assert_eq!(result, -0.004689);
+    }
 
-	#[test]
-	fn perlin_seeded_tests() {
-		let perlin = Perlin::<f32>::new_from_seed(algorithm::quintic_curve, 12345);
-		let result = perlin.eval(0.0);
-		assert_eq!(result, 0.0);
+    #[test]
+    fn perlin_seeded_tests() {
+        let mut perlin = Perlin::<f32>::new_from_seed(algorithm::quintic_curve, 12345);
+        let result = perlin.sample_1d(0.0);
+        assert_eq!(result, 0.0);
 
-		let result = perlin.eval(0.1);
-		assert_eq!(result, 0.092529);
-	}
+        let result = perlin.sample_1d(0.1);
+        assert_eq!(result, 0.092529);
+    }
 }
