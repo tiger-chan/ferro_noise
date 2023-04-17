@@ -1,10 +1,11 @@
 use crate::float::Float;
 
-use super::{Cache, Perlin, Task};
+use super::{Bias, Cache, Perlin, Task};
 
 #[allow(dead_code)]
 pub enum TaskType<T: Float> {
     Constant(T),
+    Bias(Box<Bias<T>>),
     Cache(Box<Cache<T>>),
     Perlin(Box<Perlin<T>>),
 }
@@ -12,6 +13,7 @@ pub enum TaskType<T: Float> {
 impl<T: Float> Task<T> for TaskType<T> {
     fn sample_1d(&mut self, x: T) -> T {
         match self {
+            Self::Bias(t) => t.sample_1d(x),
             Self::Constant(v) => v.clone(),
             Self::Cache(t) => t.sample_1d(x),
             Self::Perlin(t) => t.sample_1d(x),
@@ -20,6 +22,7 @@ impl<T: Float> Task<T> for TaskType<T> {
 
     fn sample_2d(&mut self, x: T, y: T) -> T {
         match self {
+            Self::Bias(t) => t.sample_2d(x, y),
             Self::Constant(v) => v.clone(),
             Self::Cache(t) => t.sample_2d(x, y),
             Self::Perlin(t) => t.sample_2d(x, y),
@@ -28,6 +31,7 @@ impl<T: Float> Task<T> for TaskType<T> {
 
     fn sample_3d(&mut self, x: T, y: T, z: T) -> T {
         match self {
+            Self::Bias(t) => t.sample_3d(x, y, z),
             Self::Constant(v) => v.clone(),
             Self::Cache(t) => t.sample_3d(x, y, z),
             Self::Perlin(t) => t.sample_3d(x, y, z),

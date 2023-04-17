@@ -1,5 +1,5 @@
 use super::Noise;
-use crate::{algorithm::*, float::Float};
+use crate::{float::Float, math::*};
 
 mod details {
     use super::Float;
@@ -319,13 +319,13 @@ impl<T: Float> Noise<T> for Perlin<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm;
+    use crate::math;
 
     use super::*;
 
     #[test]
     fn perlin_tests() {
-        let mut perlin = Perlin::<f32>::new(algorithm::quintic_curve);
+        let mut perlin = Perlin::<f32>::new(math::quintic_curve);
         let result = perlin.sample_1d(0.0);
         assert_eq!(result, 0.0);
 
@@ -335,7 +335,7 @@ mod tests {
 
     #[test]
     fn perlin_seeded_tests() {
-        let mut perlin = Perlin::<f32>::new_from_seed(algorithm::quintic_curve, 12345);
+        let mut perlin = Perlin::<f32>::new_from_seed(math::quintic_curve, 12345);
         let result = perlin.sample_1d(0.0);
         assert_eq!(result, 0.0);
 

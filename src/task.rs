@@ -1,7 +1,9 @@
+mod bias;
 mod cache;
 mod perlin;
 mod task;
 
+pub use bias::*;
 pub use cache::*;
 pub use perlin::*;
 

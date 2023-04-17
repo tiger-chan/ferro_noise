@@ -1,4 +1,4 @@
-pub mod algorithm;
 pub mod float;
+pub mod math;
 mod source;
 mod task;

@@ -129,7 +129,7 @@ mod tests {
 
     #[test]
     fn task_type_perlin_is_smooth() {
-        use crate::{algorithm::cubic_curve, source};
+        use crate::{math::cubic_curve, source};
         let source = Box::new(source::Perlin::new(cubic_curve));
         let mut result = Box::new(Perlin::new_with_config(
             source,
@@ -181,7 +181,7 @@ mod tests {
 
     #[test]
     fn task_type_perlin_is_continuous() {
-        use crate::{algorithm::cubic_curve, source};
+        use crate::{math::cubic_curve, source};
         let source = Box::new(source::Perlin::new(cubic_curve));
         let mut result = Box::new(Perlin::new_with_config(
             source,

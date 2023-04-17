@@ -1,5 +1,27 @@
 use std::ops::{Add, Mul, Sub};
 
+pub fn min<T>(a: T, b: T) -> T
+where
+    T: PartialOrd,
+{
+    if a < b {
+        a
+    } else {
+        b
+    }
+}
+
+pub fn max<T>(a: T, b: T) -> T
+where
+    T: PartialOrd,
+{
+    if a > b {
+        a
+    } else {
+        b
+    }
+}
+
 /// Linearly interpolate between two values by a given alpha value.
 ///
 /// # Arguments
