@@ -34,7 +34,7 @@ where
 ///
 /// ```
 /// extern crate ferro_noise;
-/// use ferro_noise::algorithm::{lerp};
+/// use ferro_noise::math::{lerp};
 ///
 /// let result = lerp(0.0, 1.0, 0.4);
 /// assert_eq!(result, 0.4);
@@ -62,7 +62,7 @@ where
 ///
 /// ```
 /// extern crate ferro_noise;
-/// use ferro_noise::algorithm::{clamp};
+/// use ferro_noise::math::{clamp};
 ///
 /// let result = clamp(6.0, 1.0, 5.0);
 /// assert_eq!(result, 5.0);
@@ -86,7 +86,7 @@ where
 ///
 /// ```
 /// extern crate ferro_noise;
-/// use ferro_noise::algorithm::cubic_curve;
+/// use ferro_noise::math::cubic_curve;
 ///
 /// let result = cubic_curve(2.0);
 /// assert_eq!(result, -4.0);
@@ -98,7 +98,7 @@ where
 /// range [0, 1]. The function returns `0` at `t = 1.5` and `-4` at `t = 2`.
 pub fn cubic_curve<T>(t: T) -> T
 where
-    T: From<i32> + Mul<T, Output = T> + Sub<T, Output = T> + Copy,
+    T: From<u16> + Mul<T, Output = T> + Sub<T, Output = T> + Copy,
 {
     let two: T = 2.into();
     let three: T = 3.into();
@@ -116,7 +116,7 @@ where
 ///
 /// ```
 /// extern crate ferro_noise;
-/// use ferro_noise::algorithm::quintic_curve;
+/// use ferro_noise::math::quintic_curve;
 ///
 /// let result = quintic_curve(1);
 /// assert_eq!(result, 1);
@@ -177,7 +177,7 @@ mod tests {
         let result = cubic_curve(2);
         assert_eq!(result, -4);
 
-        let result = cubic_curve(0.0);
+        let result = cubic_curve(0.0_f32);
         assert_eq!(result, 0.0);
 
         let result = cubic_curve(1.0);

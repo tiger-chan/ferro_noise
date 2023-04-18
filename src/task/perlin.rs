@@ -182,7 +182,7 @@ mod tests {
     #[test]
     fn task_type_perlin_is_continuous() {
         use crate::{math::cubic_curve, source};
-        let source = Box::new(source::Perlin::new(cubic_curve));
+        let source = Box::new(source::Perlin::<f32>::new(cubic_curve));
         let mut result = Box::new(Perlin::new_with_config(
             source,
             PerlinConfig {

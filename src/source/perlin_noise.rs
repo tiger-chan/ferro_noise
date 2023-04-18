@@ -1,4 +1,4 @@
-use super::Noise;
+use super::{Noise, Blender};
 use crate::{float::Float, math::*};
 
 mod details {
@@ -170,8 +170,6 @@ mod details {
         gradient_3d_a(hash, x, y, z)
     }
 }
-
-type Blender<T> = fn(T) -> T;
 
 pub struct Perlin<T: Float> {
     perm: details::NoisePermutions,

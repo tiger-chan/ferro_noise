@@ -1,6 +1,6 @@
 use crate::float::Float;
 
-use super::{task::TaskType, Task};
+use super::{task::TaskSource, Task};
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Default)]
 struct CacheValue<T> {
@@ -17,12 +17,12 @@ const CACHE_3D: usize = 2;
 
 pub struct Cache<T: Float> {
     store: [Option<CacheValue<T>>; MAX_CACHE_ENTRY],
-    source: TaskType<T>,
+    source: TaskSource<T>,
 }
 
 impl<T: Float> Cache<T> {
     #[allow(dead_code)]
-    pub fn new(source: TaskType<T>) -> Self {
+    pub fn new(source: TaskSource<T>) -> Self {
         Self {
             store: [None; MAX_CACHE_ENTRY],
             source: source,

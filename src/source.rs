@@ -1,5 +1,7 @@
+mod blender;
 mod perlin_noise;
 
+pub use blender::Blender;
 pub use perlin_noise::Perlin;
 
 use crate::float::Float;

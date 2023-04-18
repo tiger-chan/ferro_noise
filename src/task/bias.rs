@@ -1,6 +1,6 @@
 use crate::{float::Float, math::ease_in_out};
 
-use super::{task::TaskType, Task};
+use super::{task::TaskSource, Task};
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub struct BiasConfig<T> {
@@ -11,14 +11,14 @@ pub struct BiasConfig<T> {
 }
 
 pub struct Bias<T: Float> {
-    bias: TaskType<T>,
-    source: TaskType<T>,
+    bias: TaskSource<T>,
+    source: TaskSource<T>,
     config: BiasConfig<T>,
 }
 
 impl<T: Float> Bias<T> {
     #[allow(dead_code)]
-    pub fn new(source: TaskType<T>, bias: TaskType<T>) -> Self {
+    pub fn new(source: TaskSource<T>, bias: TaskSource<T>) -> Self {
         Self {
             bias,
             source,
@@ -62,7 +62,7 @@ mod tests {
 
     #[test]
     fn task_type_bias_tests() {
-        let mut result = Bias::new(TaskType::Constant(0.5), TaskType::Constant(1.0));
+        let mut result = Bias::new(TaskSource::Constant(0.5), TaskSource::Constant(1.0));
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
         assert_eq!(result.sample_1d(3.0), 0.5);
@@ -75,7 +75,7 @@ mod tests {
         assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
         assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-        let mut result = Bias::new(TaskType::Constant(0.25_f32), TaskType::Constant(0.5_f32));
+        let mut result = Bias::new(TaskSource::Constant(0.25_f32), TaskSource::Constant(0.5_f32));
         assert_eq!(result.sample_1d(1.0_f32), 0.0625_f32);
         assert_eq!(result.sample_1d(2.0_f32), 0.0625_f32);
         assert_eq!(result.sample_1d(3.0_f32), 0.0625_f32);

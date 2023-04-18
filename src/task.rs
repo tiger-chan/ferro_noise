@@ -2,12 +2,14 @@ mod bias;
 mod cache;
 mod gradient;
 mod perlin;
+mod selector;
 mod task;
 
 pub use bias::*;
 pub use cache::*;
 pub use gradient::*;
 pub use perlin::*;
+pub use selector::*;
 
 use crate::float::Float;
 

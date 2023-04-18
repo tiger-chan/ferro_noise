@@ -3,7 +3,7 @@ use crate::float::Float;
 use super::{Bias, Cache, Gradient, Perlin, Task};
 
 #[allow(dead_code)]
-pub enum TaskType<T: Float> {
+pub enum TaskSource<T: Float> {
     Constant(T),
     Bias(Box<Bias<T>>),
     Cache(Box<Cache<T>>),
@@ -11,7 +11,7 @@ pub enum TaskType<T: Float> {
     Perlin(Box<Perlin<T>>),
 }
 
-impl<T: Float> Task<T> for TaskType<T> {
+impl<T: Float> Task<T> for TaskSource<T> {
     fn sample_1d(&mut self, x: T) -> T {
         match self {
             Self::Bias(t) => t.sample_1d(x),
@@ -49,7 +49,7 @@ mod tests {
 
     #[test]
     fn task_type_constant_tests() {
-        let mut result = TaskType::Constant(0.5);
+        let mut result = TaskSource::Constant(0.5);
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
         assert_eq!(result.sample_1d(3.0), 0.5);
@@ -62,7 +62,7 @@ mod tests {
         assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
         assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-        let mut result = TaskType::Constant(0.5_f32);
+        let mut result = TaskSource::Constant(0.5_f32);
         assert_eq!(result.sample_1d(1.0_f32), 0.5_f32);
         assert_eq!(result.sample_1d(2.0_f32), 0.5_f32);
         assert_eq!(result.sample_1d(3.0_f32), 0.5_f32);
@@ -78,7 +78,7 @@ mod tests {
 
     #[test]
     fn task_type_cache_tests() {
-        let mut result = TaskType::Cache(Box::new(Cache::new(TaskType::Constant(0.5))));
+        let mut result = TaskSource::Cache(Box::new(Cache::new(TaskSource::Constant(0.5))));
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
         assert_eq!(result.sample_1d(3.0), 0.5);
@@ -91,7 +91,7 @@ mod tests {
         assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
         assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-        let mut result = TaskType::Cache(Box::new(Cache::new(TaskType::Constant(0.5_f32))));
+        let mut result = TaskSource::Cache(Box::new(Cache::new(TaskSource::Constant(0.5_f32))));
         assert_eq!(result.sample_1d(1.0_f32), 0.5_f32);
         assert_eq!(result.sample_1d(2.0_f32), 0.5_f32);
         assert_eq!(result.sample_1d(3.0_f32), 0.5_f32);
