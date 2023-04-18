@@ -1,16 +1,16 @@
 mod aggregator;
 mod bias;
 mod cache;
+mod fractal;
 mod gradient;
-mod perlin;
 mod selector;
 mod task;
 
 pub use aggregator::*;
 pub use bias::*;
 pub use cache::*;
+pub use fractal::*;
 pub use gradient::*;
-pub use perlin::*;
 pub use selector::*;
 
 use crate::float::Float;

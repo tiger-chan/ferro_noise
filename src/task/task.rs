@@ -1,6 +1,6 @@
 use crate::float::Float;
 
-use super::{Aggregator, Bias, Cache, Gradient, Perlin, Task};
+use super::{Aggregator, Bias, Cache, Fractal, Gradient, Task};
 
 #[allow(dead_code)]
 pub enum TaskSource<T: Float> {
@@ -9,7 +9,7 @@ pub enum TaskSource<T: Float> {
     Bias(Box<Bias<T>>),
     Cache(Box<Cache<T>>),
     Gradient(Gradient<T>),
-    Perlin(Box<Perlin<T>>),
+    Fractal(Box<Fractal<T>>),
 }
 
 impl<T: Float> Task<T> for TaskSource<T> {
@@ -20,7 +20,7 @@ impl<T: Float> Task<T> for TaskSource<T> {
             Self::Constant(v) => v.clone(),
             Self::Cache(t) => t.sample_1d(x),
             Self::Gradient(t) => t.sample_1d(x),
-            Self::Perlin(t) => t.sample_1d(x),
+            Self::Fractal(t) => t.sample_1d(x),
         }
     }
 
@@ -31,7 +31,7 @@ impl<T: Float> Task<T> for TaskSource<T> {
             Self::Constant(v) => v.clone(),
             Self::Cache(t) => t.sample_2d(x, y),
             Self::Gradient(t) => t.sample_2d(x, y),
-            Self::Perlin(t) => t.sample_2d(x, y),
+            Self::Fractal(t) => t.sample_2d(x, y),
         }
     }
 
@@ -42,7 +42,7 @@ impl<T: Float> Task<T> for TaskSource<T> {
             Self::Constant(v) => v.clone(),
             Self::Cache(t) => t.sample_3d(x, y, z),
             Self::Gradient(t) => t.sample_3d(x, y, z),
-            Self::Perlin(t) => t.sample_3d(x, y, z),
+            Self::Fractal(t) => t.sample_3d(x, y, z),
         }
     }
 }

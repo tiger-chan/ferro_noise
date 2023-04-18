@@ -80,6 +80,10 @@ where
     }
 }
 
+pub fn linear_curve<T>(t: T) -> T {
+    t
+}
+
 /// Evaluates a cubic curve at a given time `t`, where `t` is typically in the range [0, 1].
 ///
 /// # Examples
@@ -102,6 +106,7 @@ where
 {
     let two: T = 2.into();
     let three: T = 3.into();
+    // https://en.wikipedia.org/wiki/Cubic_Hermite_spline
     // 3t^2 − 2t^3
     (t * t) * (three - (two * t))
 }
@@ -128,6 +133,7 @@ where
     let six: T = T::from(6);
     let ten: T = T::from(10);
     let fifteen: T = T::from(15);
+    // https://mrl.nyu.edu/~perlin/noise/
     // 6t^5 - 15t^4 + 10t^3
     return t * t * t * (t * (t * six - fifteen) + ten);
 }
