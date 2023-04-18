@@ -1,9 +1,10 @@
 use crate::float::Float;
 
-use super::{Bias, Cache, Gradient, Perlin, Task};
+use super::{Aggregator, Bias, Cache, Gradient, Perlin, Task};
 
 #[allow(dead_code)]
 pub enum TaskSource<T: Float> {
+    Aggregator(Aggregator<T>),
     Constant(T),
     Bias(Box<Bias<T>>),
     Cache(Box<Cache<T>>),
@@ -14,6 +15,7 @@ pub enum TaskSource<T: Float> {
 impl<T: Float> Task<T> for TaskSource<T> {
     fn sample_1d(&mut self, x: T) -> T {
         match self {
+            Self::Aggregator(t) => t.sample_1d(x),
             Self::Bias(t) => t.sample_1d(x),
             Self::Constant(v) => v.clone(),
             Self::Cache(t) => t.sample_1d(x),
@@ -24,6 +26,7 @@ impl<T: Float> Task<T> for TaskSource<T> {
 
     fn sample_2d(&mut self, x: T, y: T) -> T {
         match self {
+            Self::Aggregator(t) => t.sample_2d(x, y),
             Self::Bias(t) => t.sample_2d(x, y),
             Self::Constant(v) => v.clone(),
             Self::Cache(t) => t.sample_2d(x, y),
@@ -34,6 +37,7 @@ impl<T: Float> Task<T> for TaskSource<T> {
 
     fn sample_3d(&mut self, x: T, y: T, z: T) -> T {
         match self {
+            Self::Aggregator(t) => t.sample_3d(x, y, z),
             Self::Bias(t) => t.sample_3d(x, y, z),
             Self::Constant(v) => v.clone(),
             Self::Cache(t) => t.sample_3d(x, y, z),
