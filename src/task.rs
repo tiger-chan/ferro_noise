@@ -5,6 +5,7 @@ mod fractal;
 mod gradient;
 mod selector;
 mod task;
+mod task_tree;
 
 pub use aggregator::*;
 pub use bias::*;
@@ -12,6 +13,8 @@ pub use cache::*;
 pub use fractal::*;
 pub use gradient::*;
 pub use selector::*;
+pub use task::*;
+pub use task_tree::*;
 
 use crate::float::Float;
 

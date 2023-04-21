@@ -19,6 +19,7 @@ pub trait Float<T = Self>:
     + From<f32>
     + From<u16>
     + Default
+    + 'static
 {
     fn abs(self) -> Self;
     fn as_index(self) -> usize;
@@ -28,6 +29,8 @@ pub trait Float<T = Self>:
     const ZERO: Self;
     const ONE: Self;
     const TWO: Self;
+    const MAX: Self;
+    const MIN: Self;
 }
 
 impl Float for f32 {
@@ -54,6 +57,9 @@ impl Float for f32 {
     const ZERO: Self = 0.0;
     const ONE: Self = 1.0;
     const TWO: Self = 2.0;
+
+    const MAX: Self = Self::MAX;
+    const MIN: Self = Self::MIN;
 }
 
 impl Float for f64 {
@@ -80,4 +86,7 @@ impl Float for f64 {
     const ZERO: Self = 0.0;
     const ONE: Self = 1.0;
     const TWO: Self = 2.0;
+
+    const MAX: Self = Self::MAX;
+    const MIN: Self = Self::MIN;
 }

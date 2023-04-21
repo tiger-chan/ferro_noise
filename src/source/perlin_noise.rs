@@ -1,4 +1,4 @@
-use super::{Noise, Blender};
+use super::{Blender, BoxNoise, Noise};
 use crate::{float::Float, math::*};
 
 mod details {
@@ -171,6 +171,7 @@ mod details {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct Perlin<T: Float> {
     perm: details::NoisePermutions,
     blender: Blender<T>,
@@ -312,6 +313,15 @@ impl<T: Float> Noise<T> for Perlin<T> {
         let lv2 = lerp(lu3, lu4, v);
 
         lerp(lv1, lv2, w)
+    }
+}
+
+impl<T: Float> BoxNoise<T> for Perlin<T> {
+    fn box_clone(&self) -> Box<dyn Noise<T> + 'static> {
+        Box::new(Self {
+            perm: self.perm.clone(),
+            blender: self.blender,
+        })
     }
 }
 

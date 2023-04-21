@@ -17,3 +17,7 @@ pub trait Noise<T: Float> {
     /// Evaluates the noise function at the given (x, y, z) coordinates.
     fn sample_3d(&mut self, x: T, y: T, z: T) -> T;
 }
+
+pub trait BoxNoise<T: Float>: Noise<T> {
+    fn box_clone(&self) -> Box<dyn Noise<T> + 'static>;
+}

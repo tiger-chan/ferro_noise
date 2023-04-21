@@ -12,6 +12,7 @@ const GRADIENT_Z: usize = 2;
 
 type Points<T> = [T; MAX_GRADIENT_ENTRY];
 
+#[derive(Clone)]
 pub struct Gradient<T: Float> {
     p1: [T; MAX_GRADIENT_ENTRY],
     p2: [T; MAX_GRADIENT_ENTRY],

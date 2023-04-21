@@ -5,8 +5,9 @@ use crate::float::Float;
 use super::{Aggregator, Bias, Cache, Fractal, Gradient, Task};
 
 #[allow(dead_code)]
+#[derive(Clone)]
 pub enum TaskSource<T: Float> {
-    Aggregator(Aggregator<T>),
+    Aggregate(Aggregator<T>),
     Constant(T),
     Bias(Rc<RefCell<Bias<T>>>),
     Cache(Rc<RefCell<Cache<T>>>),
@@ -17,7 +18,7 @@ pub enum TaskSource<T: Float> {
 impl<T: Float> Task<T> for TaskSource<T> {
     fn sample_1d(&mut self, x: T) -> T {
         match self {
-            Self::Aggregator(t) => t.sample_1d(x),
+            Self::Aggregate(t) => t.sample_1d(x),
             Self::Bias(t) => t.borrow_mut().sample_1d(x),
             Self::Constant(v) => v.clone(),
             Self::Cache(t) => t.borrow_mut().sample_1d(x),
@@ -28,7 +29,7 @@ impl<T: Float> Task<T> for TaskSource<T> {
 
     fn sample_2d(&mut self, x: T, y: T) -> T {
         match self {
-            Self::Aggregator(t) => t.sample_2d(x, y),
+            Self::Aggregate(t) => t.sample_2d(x, y),
             Self::Bias(t) => t.borrow_mut().sample_2d(x, y),
             Self::Constant(v) => v.clone(),
             Self::Cache(t) => t.borrow_mut().sample_2d(x, y),
@@ -39,7 +40,7 @@ impl<T: Float> Task<T> for TaskSource<T> {
 
     fn sample_3d(&mut self, x: T, y: T, z: T) -> T {
         match self {
-            Self::Aggregator(t) => t.sample_3d(x, y, z),
+            Self::Aggregate(t) => t.sample_3d(x, y, z),
             Self::Bias(t) => t.borrow_mut().sample_3d(x, y, z),
             Self::Constant(v) => v.clone(),
             Self::Cache(t) => t.borrow_mut().sample_3d(x, y, z),

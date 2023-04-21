@@ -1,10 +1,10 @@
 use crate::float::Float;
 
-use super::{task::TaskSource, Task};
+use super::{task::TaskSource, Task, TaskTree};
 
 #[allow(dead_code)]
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
-pub enum AggregationMethod {
+pub enum Operation {
     Add,
     Avg,
     Sub,
@@ -14,8 +14,9 @@ pub enum AggregationMethod {
     Min,
 }
 
+#[derive(Clone)]
 pub struct Aggregator<T: Float> {
-    method: AggregationMethod,
+    op: Operation,
     initial: T,
     sources: Vec<TaskSource<T>>,
 }
@@ -23,7 +24,7 @@ pub struct Aggregator<T: Float> {
 impl<T: Float> Default for Aggregator<T> {
     fn default() -> Self {
         Self {
-            method: AggregationMethod::Add,
+            op: Operation::Add,
             initial: T::default(),
             sources: vec![],
         }
@@ -32,9 +33,9 @@ impl<T: Float> Default for Aggregator<T> {
 
 impl<T: Float> Aggregator<T> {
     #[allow(dead_code)]
-    pub fn new(method: AggregationMethod, initial: T, sources: Vec<TaskSource<T>>) -> Self {
+    pub fn new(op: Operation, initial: T, sources: Vec<TaskSource<T>>) -> Self {
         Self {
-            method,
+            op,
             initial,
             sources,
         }
@@ -47,29 +48,29 @@ impl<T: Float> Aggregator<T> {
         let mut result = self.initial;
         for source in self.sources.iter_mut() {
             let val = sampler(source);
-            result = match self.method {
-                AggregationMethod::Add => result + val,
-                AggregationMethod::Avg => result + val,
-                AggregationMethod::Div => result / val,
-                AggregationMethod::Max => {
+            result = match self.op {
+                Operation::Add => result + val,
+                Operation::Avg => result + val,
+                Operation::Div => result / val,
+                Operation::Max => {
                     if result < val {
                         val
                     } else {
                         result
                     }
                 }
-                AggregationMethod::Min => {
+                Operation::Min => {
                     if result < val {
                         result
                     } else {
                         val
                     }
                 }
-                AggregationMethod::Mul => result * val,
-                AggregationMethod::Sub => result - val,
+                Operation::Mul => result * val,
+                Operation::Sub => result - val,
             };
         }
-        if self.method == AggregationMethod::Avg && self.sources.len() > 0 {
+        if self.op == Operation::Avg && self.sources.len() > 0 {
             result / T::from(self.sources.len() as f32)
         } else {
             result
@@ -91,17 +92,84 @@ impl<T: Float> Task<T> for Aggregator<T> {
     }
 }
 
+pub struct AggregatorBuilder<T: Float> {
+    op: Operation,
+    initial: Option<T>,
+    tasks: Vec<TaskSource<T>>,
+    refs: Vec<String>,
+}
+
+#[allow(dead_code)]
+impl<T: Float> AggregatorBuilder<T> {
+    pub fn new() -> Self {
+        Self {
+            op: Operation::Add,
+            initial: None,
+            tasks: vec![],
+            refs: vec![],
+        }
+    }
+    pub fn add_named_task<S: Into<String>>(&mut self, name: S) -> &mut Self {
+        self.refs.push(name.into());
+        self
+    }
+
+    pub fn add_task(&mut self, task: TaskSource<T>) -> &mut Self {
+        self.tasks.push(task);
+        self
+    }
+
+    pub fn build(&self) -> Aggregator<T> {
+        Aggregator {
+            op: self.op,
+            initial: match self.initial {
+                Some(x) => x,
+                _ => match self.op {
+                    Operation::Div | Operation::Mul => T::ONE,
+                    Operation::Min => T::MAX,
+                    Operation::Max => T::MIN,
+                    _ => T::ZERO,
+                },
+            },
+            sources: self.tasks.clone(),
+        }
+    }
+
+    /// Link named tasks to their task tree values
+    pub fn link(&mut self, tree: &TaskTree<T>) -> &mut Self {
+        for name in &self.refs {
+            if let Some(task) = tree.get(name) {
+                self.tasks.push(task.clone());
+            }
+        }
+        self.refs.clear();
+        self
+    }
+
+    pub fn initial<V: Into<T>>(&mut self, value: V) -> &mut Self {
+        self.initial = Some(value.into());
+        self
+    }
+
+    pub fn operation(&mut self, op: Operation) -> &mut Self {
+        self.op = op;
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use TaskSource::Constant;
 
     #[test]
     fn aggregator_add_tests() {
-        let mut result = Aggregator::<f64>::new(
-            AggregationMethod::Add,
-            0.0,
-            vec![TaskSource::Constant(0.5), TaskSource::Constant(0.5)],
-        );
+        let mut result = AggregatorBuilder::<f64>::new()
+            .operation(Operation::Add)
+            .initial(0)
+            .add_task(Constant(0.5))
+            .add_task(Constant(0.5))
+            .build();
 
         assert_eq!(result.sample_1d(1.0), 1.0);
         assert_eq!(result.sample_1d(2.0), 1.0);
@@ -115,11 +183,13 @@ mod tests {
         assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 1.0);
         assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 1.0);
 
-        let mut result = Aggregator::<f32>::new(
-            AggregationMethod::Add,
-            0.0,
-            vec![TaskSource::Constant(0.5), TaskSource::Constant(0.25)],
-        );
+        let mut result = AggregatorBuilder::<f32>::new()
+            .operation(Operation::Add)
+            .initial(0.0)
+            .add_task(Constant(0.5))
+            .add_task(Constant(0.25))
+            .build();
+
         assert_eq!(result.sample_1d(1.0), 0.75);
         assert_eq!(result.sample_1d(2.0), 0.75);
         assert_eq!(result.sample_1d(3.0), 0.75);
@@ -135,11 +205,12 @@ mod tests {
 
     #[test]
     fn aggregator_avg_tests() {
-        let mut result = Aggregator::<f64>::new(
-            AggregationMethod::Avg,
-            0.0,
-            vec![TaskSource::Constant(0.5), TaskSource::Constant(0.5)],
-        );
+        let mut result = AggregatorBuilder::<f64>::new()
+            .operation(Operation::Avg)
+            .initial(0)
+            .add_task(Constant(0.5))
+            .add_task(Constant(0.5))
+            .build();
 
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
@@ -153,11 +224,13 @@ mod tests {
         assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
         assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-        let mut result = Aggregator::<f32>::new(
-            AggregationMethod::Avg,
-            0.0,
-            vec![TaskSource::Constant(0.5), TaskSource::Constant(0.5)],
-        );
+        let mut result = AggregatorBuilder::<f32>::new()
+            .operation(Operation::Avg)
+            .initial(0u16)
+            .add_task(Constant(0.5))
+            .add_task(Constant(0.5))
+            .build();
+
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
         assert_eq!(result.sample_1d(3.0), 0.5);
@@ -173,11 +246,12 @@ mod tests {
 
     #[test]
     fn aggregator_div_tests() {
-        let mut result = Aggregator::<f64>::new(
-            AggregationMethod::Div,
-            2.0,
-            vec![TaskSource::Constant(1.0), TaskSource::Constant(4.0)],
-        );
+        let mut result = AggregatorBuilder::<f64>::new()
+            .operation(Operation::Div)
+            .initial(2)
+            .add_task(Constant(1.0))
+            .add_task(Constant(4.0))
+            .build();
 
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
@@ -191,11 +265,13 @@ mod tests {
         assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
         assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-        let mut result = Aggregator::<f32>::new(
-            AggregationMethod::Div,
-            2.0,
-            vec![TaskSource::Constant(4.0), TaskSource::Constant(1.0)],
-        );
+        let mut result = AggregatorBuilder::<f32>::new()
+            .operation(Operation::Div)
+            .initial(2.0)
+            .add_task(Constant(4.0))
+            .add_task(Constant(1.0))
+            .build();
+
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
         assert_eq!(result.sample_1d(3.0), 0.5);
@@ -211,11 +287,11 @@ mod tests {
 
     #[test]
     fn aggregator_max_tests() {
-        let mut result = Aggregator::<f64>::new(
-            AggregationMethod::Max,
-            0.0,
-            vec![TaskSource::Constant(0.2), TaskSource::Constant(0.5)],
-        );
+        let mut result = AggregatorBuilder::<f64>::new()
+            .operation(Operation::Max)
+            .add_task(Constant(0.2))
+            .add_task(Constant(0.5))
+            .build();
 
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
@@ -229,11 +305,13 @@ mod tests {
         assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
         assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-        let mut result = Aggregator::<f32>::new(
-            AggregationMethod::Max,
-            -2.0,
-            vec![TaskSource::Constant(-0.05), TaskSource::Constant(0.5)],
-        );
+        let mut result = AggregatorBuilder::<f32>::new()
+            .operation(Operation::Max)
+            .initial(-2.0)
+            .add_task(Constant(-0.05))
+            .add_task(Constant(0.5))
+            .build();
+
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
         assert_eq!(result.sample_1d(3.0), 0.5);
@@ -249,11 +327,11 @@ mod tests {
 
     #[test]
     fn aggregator_min_tests() {
-        let mut result = Aggregator::<f64>::new(
-            AggregationMethod::Min,
-            10.0,
-            vec![TaskSource::Constant(0.5), TaskSource::Constant(3.0)],
-        );
+        let mut result = AggregatorBuilder::<f64>::new()
+            .operation(Operation::Min)
+            .add_task(Constant(0.5))
+            .add_task(Constant(3.0))
+            .build();
 
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
@@ -267,11 +345,13 @@ mod tests {
         assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
         assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-        let mut result = Aggregator::<f32>::new(
-            AggregationMethod::Min,
-            2.0,
-            vec![TaskSource::Constant(5.0), TaskSource::Constant(0.5)],
-        );
+        let mut result = AggregatorBuilder::<f32>::new()
+            .operation(Operation::Min)
+            .initial(2.0)
+            .add_task(Constant(5.0))
+            .add_task(Constant(0.5))
+            .build();
+
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
         assert_eq!(result.sample_1d(3.0), 0.5);
@@ -287,11 +367,11 @@ mod tests {
 
     #[test]
     fn aggregator_mul_tests() {
-        let mut result = Aggregator::<f64>::new(
-            AggregationMethod::Mul,
-            1.0,
-            vec![TaskSource::Constant(0.5), TaskSource::Constant(0.5)],
-        );
+        let mut result = AggregatorBuilder::<f64>::new()
+            .operation(Operation::Mul)
+            .add_task(Constant(0.5))
+            .add_task(Constant(0.5))
+            .build();
 
         assert_eq!(result.sample_1d(1.0), 0.25);
         assert_eq!(result.sample_1d(2.0), 0.25);
@@ -305,11 +385,12 @@ mod tests {
         assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.25);
         assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.25);
 
-        let mut result = Aggregator::<f32>::new(
-            AggregationMethod::Mul,
-            1.0,
-            vec![TaskSource::Constant(0.5), TaskSource::Constant(0.5)],
-        );
+        let mut result = AggregatorBuilder::<f32>::new()
+            .operation(Operation::Mul)
+            .add_task(Constant(0.5))
+            .add_task(Constant(0.5))
+            .build();
+
         assert_eq!(result.sample_1d(1.0), 0.25);
         assert_eq!(result.sample_1d(2.0), 0.25);
         assert_eq!(result.sample_1d(3.0), 0.25);
@@ -325,11 +406,12 @@ mod tests {
 
     #[test]
     fn aggregator_sub_tests() {
-        let mut result = Aggregator::<f64>::new(
-            AggregationMethod::Sub,
-            1.0,
-            vec![TaskSource::Constant(0.5), TaskSource::Constant(0.5)],
-        );
+        let mut result = AggregatorBuilder::<f64>::new()
+            .operation(Operation::Sub)
+            .initial(1)
+            .add_task(Constant(0.5))
+            .add_task(Constant(0.5))
+            .build();
 
         assert_eq!(result.sample_1d(1.0), 0.0);
         assert_eq!(result.sample_1d(2.0), 0.0);
@@ -343,11 +425,13 @@ mod tests {
         assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.0);
         assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.0);
 
-        let mut result = Aggregator::<f32>::new(
-            AggregationMethod::Sub,
-            1.0,
-            vec![TaskSource::Constant(0.5), TaskSource::Constant(0.25)],
-        );
+        let mut result = AggregatorBuilder::<f32>::new()
+            .operation(Operation::Sub)
+            .initial(1.0)
+            .add_task(Constant(0.5))
+            .add_task(Constant(0.25))
+            .build();
+
         assert_eq!(result.sample_1d(1.0), 0.25);
         assert_eq!(result.sample_1d(2.0), 0.25);
         assert_eq!(result.sample_1d(3.0), 0.25);
