@@ -14,15 +14,21 @@ pub struct BiasBuilder<T: Float> {
     max: T,
 }
 
-#[allow(dead_code)]
-impl<T: Float> BiasBuilder<T> {
-    pub fn new() -> Self {
+impl<T: Float> Default for BiasBuilder<T> {
+    fn default() -> Self {
         Self {
             bias: NameOrSource::Source(TaskSource::Constant(T::ZERO)),
             source: NameOrSource::Source(TaskSource::Constant(T::ZERO)),
             min: T::ONE,
             max: T::from(4),
         }
+    }
+}
+
+#[allow(dead_code)]
+impl<T: Float> BiasBuilder<T> {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn bias(&mut self, task: TaskSource<T>) -> &mut Self {
@@ -73,7 +79,7 @@ impl<T: Float> BiasBuilder<T> {
         self
     }
 
-	pub fn min(&mut self, min: T) -> &mut Self {
+    pub fn min(&mut self, min: T) -> &mut Self {
         self.min = min;
         self
     }
