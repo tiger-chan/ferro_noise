@@ -24,66 +24,40 @@ pub struct Cache<T: Float> {
 }
 
 impl<T: Float> Cache<T> {
-    #[allow(dead_code)]
-    pub fn new(source: TaskSource<T>) -> Self {
-        Self {
-            store: [None; MAX_CACHE_ENTRY],
-            source: source,
+    fn eval<F: Fn(&mut dyn Task<T>) -> T>(
+        &mut self,
+        key: usize,
+        coords: (T, T, T),
+        sampler: F,
+    ) -> T {
+        if let Some(v) = self.store[key] {
+            if v.x.nearly_eq(coords.0) && v.y.nearly_eq(coords.1) && v.z.nearly_eq(coords.2) {
+                return v.value;
+            }
         }
+
+        self.store[key] = Some(CacheValue {
+            x: coords.0,
+            y: coords.1,
+            z: coords.2,
+            value: sampler(&mut self.source),
+        });
+
+        self.store[key].unwrap().value
     }
 }
 
 impl<T: Float> Task<T> for Cache<T> {
     fn sample_1d(&mut self, x: T) -> T {
-        if let Some(v) = self.store[CACHE_1D] {
-            if v.x.nearly_eq(x) {
-                return v.value;
-            }
-        }
-
-        self.store[CACHE_1D] = Some(CacheValue {
-            x,
-            y: T::from(0.0),
-            z: T::from(0.0),
-            value: self.source.sample_1d(x),
-        });
-
-        self.store[CACHE_1D].unwrap().value
+        self.eval(CACHE_1D, (x, T::ZERO, T::ZERO), |t| t.sample_1d(x))
     }
 
     fn sample_2d(&mut self, x: T, y: T) -> T {
-        if let Some(v) = self.store[CACHE_2D] {
-            if v.x.nearly_eq(x) && v.y.nearly_eq(y) {
-                return v.value;
-            }
-        }
-
-        self.store[CACHE_2D] = Some(CacheValue {
-            x,
-            y,
-            z: T::from(0.0),
-            value: self.source.sample_2d(x, y),
-        });
-
-        self.store[CACHE_2D].unwrap().value
+        self.eval(CACHE_2D, (x, y, T::ZERO), |t| t.sample_2d(x, y))
     }
 
     fn sample_3d(&mut self, x: T, y: T, z: T) -> T {
-        if let Some(v) = self.store[CACHE_3D] {
-            if v.x.nearly_eq(x) && v.y.nearly_eq(y) && v.z.nearly_eq(z) {
-                return v.value;
-            }
-        }
-        {
-            self.store[CACHE_3D] = Some(CacheValue {
-                x,
-                y,
-                z,
-                value: self.source.sample_3d(x, y, z),
-            });
-
-            self.store[CACHE_3D].unwrap().value
-        }
+        self.eval(CACHE_3D, (x, y, z), |t| t.sample_3d(x, y, z))
     }
 }
 

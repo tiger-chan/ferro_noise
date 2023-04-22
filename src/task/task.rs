@@ -52,6 +52,8 @@ impl<T: Float> Task<T> for TaskSource<T> {
 
 #[cfg(test)]
 mod tests {
+    use crate::task::CacheBuilder;
+
     use super::*;
 
     #[test]
@@ -85,8 +87,11 @@ mod tests {
 
     #[test]
     fn task_type_cache_tests() {
-        let mut result =
-            TaskSource::<f64>::Cache(Rc::new(RefCell::new(Cache::new(TaskSource::Constant(0.5)))));
+        let mut result = TaskSource::<f64>::Cache(Rc::new(RefCell::new(
+            CacheBuilder::new()
+                .source(TaskSource::Constant(0.5))
+                .build(),
+        )));
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
         assert_eq!(result.sample_1d(3.0), 0.5);
@@ -99,8 +104,11 @@ mod tests {
         assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
         assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-        let mut result =
-            TaskSource::<f32>::Cache(Rc::new(RefCell::new(Cache::new(TaskSource::Constant(0.5)))));
+        let mut result = TaskSource::<f32>::Cache(Rc::new(RefCell::new(
+            CacheBuilder::new()
+                .source(TaskSource::Constant(0.5))
+                .build(),
+        )));
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
         assert_eq!(result.sample_1d(3.0), 0.5);
