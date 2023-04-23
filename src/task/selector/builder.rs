@@ -1,4 +1,8 @@
-use crate::{float::Float, source::Blender, task::TaskSource};
+use crate::{
+    float::Float,
+    source::Blender,
+    task::{TaskSource, TaskTree},
+};
 
 use super::Selector;
 
@@ -20,6 +24,19 @@ macro_rules! source_or_message {
     };
 }
 
+macro_rules! named_to_task {
+    ($value:expr, $tree:expr) => {
+        match &$value {
+            NameOrSource::Named(name) => {
+                if let Some(task) = $tree.get(name) {
+                    $value = NameOrSource::Source(task.clone());
+                }
+            }
+            _ => {}
+        }
+    };
+}
+
 pub struct SelectorBuilder<T: Float> {
     blender: Blender<T>,
     condition: NameOrSource<T>,
@@ -35,14 +52,13 @@ impl<T: Float> SelectorBuilder<T> {
     pub fn new() -> Self {
         use crate::math::linear_curve;
         use NameOrSource::Source;
-        use TaskSource::Constant;
         Self {
             blender: linear_curve,
-            condition: Source(Constant(T::ZERO)),
-            lower: Source(Constant(-T::ONE)),
-            upper: Source(Constant(T::ONE)),
-            falloff: Source(Constant(T::ZERO)),
-            threshold: Source(Constant(T::from(0.5))),
+            condition: Source(T::ZERO.into()),
+            lower: Source((-T::ONE).into()),
+            upper: Source(T::ONE.into()),
+            falloff: Source(T::ZERO.into()),
+            threshold: Source(T::from(0.5).into()),
         }
     }
 
@@ -62,18 +78,29 @@ impl<T: Float> SelectorBuilder<T> {
         }
     }
 
-    pub fn condition(&mut self, condition: TaskSource<T>) -> &mut Self {
-        self.condition = NameOrSource::Source(condition);
+    pub fn condition<V: Into<TaskSource<T>>>(&mut self, condition: V) -> &mut Self {
+        self.condition = NameOrSource::Source(condition.into());
         self
     }
 
-    pub fn falloff(&mut self, falloff: TaskSource<T>) -> &mut Self {
-        self.falloff = NameOrSource::Source(falloff);
+    pub fn falloff<V: Into<TaskSource<T>>>(&mut self, falloff: V) -> &mut Self {
+        self.falloff = NameOrSource::Source(falloff.into());
         self
     }
 
-    pub fn lower(&mut self, lower: TaskSource<T>) -> &mut Self {
-        self.lower = NameOrSource::Source(lower);
+    /// Link named tasks to their task tree values
+    pub fn link(&mut self, tree: &TaskTree<T>) -> &mut Self {
+        named_to_task!(self.condition, tree);
+        named_to_task!(self.falloff, tree);
+        named_to_task!(self.lower, tree);
+        named_to_task!(self.threshold, tree);
+        named_to_task!(self.upper, tree);
+
+        self
+    }
+
+    pub fn lower<V: Into<TaskSource<T>>>(&mut self, lower: V) -> &mut Self {
+        self.lower = NameOrSource::Source(lower.into());
         self
     }
 
@@ -102,13 +129,13 @@ impl<T: Float> SelectorBuilder<T> {
         self
     }
 
-    pub fn threadhold(&mut self, threshold: TaskSource<T>) -> &mut Self {
-        self.threshold = NameOrSource::Source(threshold);
+    pub fn threadhold<V: Into<TaskSource<T>>>(&mut self, threshold: V) -> &mut Self {
+        self.threshold = NameOrSource::Source(threshold.into());
         self
     }
 
-    pub fn upper(&mut self, upper: TaskSource<T>) -> &mut Self {
-        self.upper = NameOrSource::Source(upper);
+    pub fn upper<V: Into<TaskSource<T>>>(&mut self, upper: V) -> &mut Self {
+        self.upper = NameOrSource::Source(upper.into());
         self
     }
 }

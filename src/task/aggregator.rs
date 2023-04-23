@@ -114,8 +114,8 @@ impl<T: Float> AggregatorBuilder<T> {
         self
     }
 
-    pub fn add_task(&mut self, task: TaskSource<T>) -> &mut Self {
-        self.tasks.push(task);
+    pub fn add_task<V: Into<TaskSource<T>>>(&mut self, task: V) -> &mut Self {
+        self.tasks.push(task.into());
         self
     }
 
@@ -160,15 +160,14 @@ impl<T: Float> AggregatorBuilder<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use TaskSource::Constant;
 
     #[test]
     fn aggregator_add_tests() {
         let mut result = AggregatorBuilder::<f64>::new()
             .operation(Operation::Add)
             .initial(0)
-            .add_task(Constant(0.5))
-            .add_task(Constant(0.5))
+            .add_task(0.5)
+            .add_task(0.5)
             .build();
 
         assert_eq!(result.sample_1d(1.0), 1.0);
@@ -186,8 +185,8 @@ mod tests {
         let mut result = AggregatorBuilder::<f32>::new()
             .operation(Operation::Add)
             .initial(0.0)
-            .add_task(Constant(0.5))
-            .add_task(Constant(0.25))
+            .add_task(0.5)
+            .add_task(0.25)
             .build();
 
         assert_eq!(result.sample_1d(1.0), 0.75);
@@ -208,8 +207,8 @@ mod tests {
         let mut result = AggregatorBuilder::<f64>::new()
             .operation(Operation::Avg)
             .initial(0)
-            .add_task(Constant(0.5))
-            .add_task(Constant(0.5))
+            .add_task(0.5)
+            .add_task(0.5)
             .build();
 
         assert_eq!(result.sample_1d(1.0), 0.5);
@@ -227,8 +226,8 @@ mod tests {
         let mut result = AggregatorBuilder::<f32>::new()
             .operation(Operation::Avg)
             .initial(0u16)
-            .add_task(Constant(0.5))
-            .add_task(Constant(0.5))
+            .add_task(0.5)
+            .add_task(0.5)
             .build();
 
         assert_eq!(result.sample_1d(1.0), 0.5);
@@ -249,8 +248,8 @@ mod tests {
         let mut result = AggregatorBuilder::<f64>::new()
             .operation(Operation::Div)
             .initial(2)
-            .add_task(Constant(1.0))
-            .add_task(Constant(4.0))
+            .add_task(1.0)
+            .add_task(4.0)
             .build();
 
         assert_eq!(result.sample_1d(1.0), 0.5);
@@ -268,8 +267,8 @@ mod tests {
         let mut result = AggregatorBuilder::<f32>::new()
             .operation(Operation::Div)
             .initial(2.0)
-            .add_task(Constant(4.0))
-            .add_task(Constant(1.0))
+            .add_task(4.0)
+            .add_task(1.0)
             .build();
 
         assert_eq!(result.sample_1d(1.0), 0.5);
@@ -289,8 +288,8 @@ mod tests {
     fn aggregator_max_tests() {
         let mut result = AggregatorBuilder::<f64>::new()
             .operation(Operation::Max)
-            .add_task(Constant(0.2))
-            .add_task(Constant(0.5))
+            .add_task(0.2)
+            .add_task(0.5)
             .build();
 
         assert_eq!(result.sample_1d(1.0), 0.5);
@@ -308,8 +307,8 @@ mod tests {
         let mut result = AggregatorBuilder::<f32>::new()
             .operation(Operation::Max)
             .initial(-2.0)
-            .add_task(Constant(-0.05))
-            .add_task(Constant(0.5))
+            .add_task(-0.05)
+            .add_task(0.5)
             .build();
 
         assert_eq!(result.sample_1d(1.0), 0.5);
@@ -329,8 +328,8 @@ mod tests {
     fn aggregator_min_tests() {
         let mut result = AggregatorBuilder::<f64>::new()
             .operation(Operation::Min)
-            .add_task(Constant(0.5))
-            .add_task(Constant(3.0))
+            .add_task(0.5)
+            .add_task(3.0)
             .build();
 
         assert_eq!(result.sample_1d(1.0), 0.5);
@@ -348,8 +347,8 @@ mod tests {
         let mut result = AggregatorBuilder::<f32>::new()
             .operation(Operation::Min)
             .initial(2.0)
-            .add_task(Constant(5.0))
-            .add_task(Constant(0.5))
+            .add_task(5.0)
+            .add_task(0.5)
             .build();
 
         assert_eq!(result.sample_1d(1.0), 0.5);
@@ -369,8 +368,8 @@ mod tests {
     fn aggregator_mul_tests() {
         let mut result = AggregatorBuilder::<f64>::new()
             .operation(Operation::Mul)
-            .add_task(Constant(0.5))
-            .add_task(Constant(0.5))
+            .add_task(0.5)
+            .add_task(0.5)
             .build();
 
         assert_eq!(result.sample_1d(1.0), 0.25);
@@ -387,8 +386,8 @@ mod tests {
 
         let mut result = AggregatorBuilder::<f32>::new()
             .operation(Operation::Mul)
-            .add_task(Constant(0.5))
-            .add_task(Constant(0.5))
+            .add_task(0.5)
+            .add_task(0.5)
             .build();
 
         assert_eq!(result.sample_1d(1.0), 0.25);
@@ -409,8 +408,8 @@ mod tests {
         let mut result = AggregatorBuilder::<f64>::new()
             .operation(Operation::Sub)
             .initial(1)
-            .add_task(Constant(0.5))
-            .add_task(Constant(0.5))
+            .add_task(0.5)
+            .add_task(0.5)
             .build();
 
         assert_eq!(result.sample_1d(1.0), 0.0);
@@ -428,8 +427,8 @@ mod tests {
         let mut result = AggregatorBuilder::<f32>::new()
             .operation(Operation::Sub)
             .initial(1.0)
-            .add_task(Constant(0.5))
-            .add_task(Constant(0.25))
+            .add_task(0.5)
+            .add_task(0.25)
             .build();
 
         assert_eq!(result.sample_1d(1.0), 0.25);

@@ -63,11 +63,11 @@ impl<T: Float> Task<T> for Cache<T> {
 
 #[cfg(test)]
 mod test {
-    use super::{TaskSource::Constant, *};
+    use super::*;
 
     #[test]
     fn value_cached() {
-        let mut result = CacheBuilder::<f32>::new().source(Constant(1.0)).build();
+        let mut result = CacheBuilder::<f32>::new().source(1.0).build();
 
         assert_eq!(result.sample_1d(1.0), 1.0);
         assert_eq!(result.sample_2d(1.0, 1.0), 1.0);

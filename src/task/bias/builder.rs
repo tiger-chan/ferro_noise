@@ -17,8 +17,8 @@ pub struct BiasBuilder<T: Float> {
 impl<T: Float> Default for BiasBuilder<T> {
     fn default() -> Self {
         Self {
-            bias: NameOrSource::Source(TaskSource::Constant(T::ZERO)),
-            source: NameOrSource::Source(TaskSource::Constant(T::ZERO)),
+            bias: NameOrSource::Source(T::ZERO.into()),
+            source: NameOrSource::Source(T::ZERO.into()),
             min: T::ONE,
             max: T::from(4),
         }
@@ -31,8 +31,8 @@ impl<T: Float> BiasBuilder<T> {
         Self::default()
     }
 
-    pub fn bias(&mut self, task: TaskSource<T>) -> &mut Self {
-        self.bias = NameOrSource::Source(task);
+    pub fn bias<V: Into<TaskSource<T>>>(&mut self, task: V) -> &mut Self {
+        self.bias = NameOrSource::Source(task.into());
         self
     }
 
@@ -94,8 +94,8 @@ impl<T: Float> BiasBuilder<T> {
         self
     }
 
-    pub fn source(&mut self, task: TaskSource<T>) -> &mut Self {
-        self.source = NameOrSource::Source(task);
+    pub fn source<V: Into<TaskSource<T>>>(&mut self, task: V) -> &mut Self {
+        self.source = NameOrSource::Source(task.into());
         self
     }
 }

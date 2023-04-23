@@ -1,4 +1,7 @@
-use crate::{float::Float, task::TaskSource};
+use crate::{
+    float::Float,
+    task::{TaskSource, TaskTree},
+};
 
 use super::Cache;
 
@@ -16,7 +19,7 @@ pub struct CacheBuilder<T: Float> {
 impl<T: Float> Default for CacheBuilder<T> {
     fn default() -> Self {
         Self {
-            source: NameOrSource::Source(TaskSource::Constant(T::ZERO)),
+            source: NameOrSource::Source(T::ZERO.into()),
         }
     }
 }
@@ -37,13 +40,27 @@ impl<T: Float> CacheBuilder<T> {
         }
     }
 
+    /// Link named tasks to their task tree values
+    pub fn link(&mut self, tree: &TaskTree<T>) -> &mut Self {
+        match &self.source {
+            NameOrSource::Named(name) => {
+                if let Some(task) = tree.get(name) {
+                    self.source = NameOrSource::Source(task.clone());
+                }
+            }
+            _ => {}
+        }
+
+        self
+    }
+
     pub fn named_source<S: Into<String>>(&mut self, name: S) -> &mut Self {
         self.source = NameOrSource::Named(name.into());
         self
     }
 
-    pub fn source(&mut self, task: TaskSource<T>) -> &mut Self {
-        self.source = NameOrSource::Source(task);
+    pub fn source<V: Into<TaskSource<T>>>(&mut self, task: V) -> &mut Self {
+        self.source = NameOrSource::Source(task.into());
         self
     }
 }

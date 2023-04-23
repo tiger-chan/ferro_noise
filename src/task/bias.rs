@@ -41,14 +41,11 @@ impl<T: Float> Task<T> for Bias<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::{TaskSource::Constant, *};
+    use super::*;
 
     #[test]
     fn task_type_bias_tests() {
-        let mut result = BiasBuilder::new()
-            .bias(Constant(1.0))
-            .source(Constant(0.5))
-            .build();
+        let mut result = BiasBuilder::new().bias(1.0).source(0.5).build();
 
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
@@ -62,10 +59,7 @@ mod tests {
         assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
         assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-        let mut result = BiasBuilder::<f32>::new()
-            .bias(Constant(0.5))
-            .source(Constant(0.25))
-            .build();
+        let mut result = BiasBuilder::<f32>::new().bias(0.5).source(0.25).build();
 
         assert_eq!(result.sample_1d(1.0_f32), 0.0625_f32);
         assert_eq!(result.sample_1d(2.0_f32), 0.0625_f32);

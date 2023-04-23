@@ -18,8 +18,8 @@ impl<T: Float> TaskTree<T> {
         }
     }
 
-    pub fn add_task<S: Into<String>>(&mut self, name: S, task: TaskSource<T>) {
-        self.tasks.insert(name.into(), task);
+    pub fn add_task<S: Into<String>, V: Into<TaskSource<T>>>(&mut self, name: S, task: V) {
+        self.tasks.insert(name.into(), task.into());
     }
 
     pub fn set_rednered_task<S: Into<String>>(&mut self, name: S) {
@@ -60,10 +60,7 @@ impl<T: Float> Task<T> for TaskTree<T> {
 mod tests {
     //use crate::task::FractalType;
 
-    use crate::task::{
-        task::TaskSource::{Aggregate, Constant},
-        AggregatorBuilder, Operation,
-    };
+    use crate::task::{AggregatorBuilder, BiasBuilder, CacheBuilder, Operation, SelectorBuilder};
 
     use super::*;
 
@@ -71,18 +68,16 @@ mod tests {
     fn aggregate_named_result() {
         let mut tree = TaskTree::<f32>::new();
 
-        tree.add_task("task 1", Constant(1.0));
+        tree.add_task("task 1", 1.0);
 
         tree.add_task(
             "task 2",
-            Aggregate(
-                AggregatorBuilder::new()
-                    .operation(Operation::Add)
-                    .add_named_task("task 1")
-                    .add_named_task("task 1")
-                    .link(&tree)
-                    .build(),
-            ),
+            AggregatorBuilder::new()
+                .operation(Operation::Add)
+                .add_named_task("task 1")
+                .add_named_task("task 1")
+                .link(&tree)
+                .build(),
         );
 
         tree.set_rednered_task("task 2");
@@ -96,9 +91,82 @@ mod tests {
 
         assert_eq!(tree.sample_1d(1.0), 0.0);
 
-        tree.add_task("task 1", Constant(1.0));
+        tree.add_task("task 1", 1.0);
 
         tree.set_rednered_task("task 1");
+
+        assert_eq!(tree.sample_1d(1.0), 1.0);
+    }
+
+    #[test]
+    fn bias_result() {
+        let mut tree = TaskTree::<f32>::new();
+
+        assert_eq!(tree.sample_1d(1.0), 0.0);
+
+        tree.add_task("task 1", 1.0);
+        tree.add_task("task 2", 0.0);
+
+        tree.add_task(
+            "task 3",
+            BiasBuilder::new()
+                .named_source("task 1")
+                .named_bias("task 2")
+                .link(&tree)
+                .build(),
+        );
+
+        tree.set_rednered_task("task 3");
+
+        assert_eq!(tree.sample_1d(1.0), 1.0);
+    }
+
+    #[test]
+    fn cache_result() {
+        let mut tree = TaskTree::<f32>::new();
+
+        assert_eq!(tree.sample_1d(1.0), 0.0);
+
+        tree.add_task("task 1", 1.0);
+
+        tree.add_task(
+            "task 2",
+            CacheBuilder::new()
+                .named_source("task 1")
+                .link(&tree)
+                .build(),
+        );
+
+        tree.set_rednered_task("task 2");
+
+        assert_eq!(tree.sample_1d(1.0), 1.0);
+    }
+
+    #[test]
+    fn selector_result() {
+        let mut tree = TaskTree::<f32>::new();
+
+        assert_eq!(tree.sample_1d(1.0), 0.0);
+
+        tree.add_task("task 1", 1.0);
+        tree.add_task("task 2", 0.0);
+        tree.add_task("task 3", 0.0);
+        tree.add_task("task 4", 0.5);
+        tree.add_task("task 5", 1.0);
+
+        tree.add_task(
+            "task 2",
+            SelectorBuilder::new()
+                .named_condition("task 1")
+                .named_falloff("task 2")
+                .named_lower("task 3")
+                .named_threadhold("task 4")
+                .named_upper("task 5")
+                .link(&tree)
+                .build(),
+        );
+
+        tree.set_rednered_task("task 2");
 
         assert_eq!(tree.sample_1d(1.0), 1.0);
     }

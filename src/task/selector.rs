@@ -74,11 +74,10 @@ mod tests {
 
     #[test]
     fn task_type_selector_tests() {
-        use TaskSource::Constant;
         let mut result = SelectorBuilder::<f64>::new()
-            .lower(Constant(0.0))
-            .upper(Constant(1.0))
-            .condition(Constant(1.0))
+            .lower(0.0)
+            .upper(1.0)
+            .condition(1.0)
             .build();
 
         assert_eq!(result.sample_1d(0.0), 1.0);
@@ -86,18 +85,18 @@ mod tests {
         assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 1.0);
 
         let mut result = SelectorBuilder::<f64>::new()
-            .lower(Constant(0.0))
-            .upper(Constant(1.0))
-            .condition(Constant(0.0))
+            .lower(0.0)
+            .upper(1.0)
+            .condition(0.0)
             .build();
         assert_eq!(result.sample_1d(0.0), 0.0);
         assert_eq!(result.sample_2d(0.0, 0.0), 0.0);
         assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 0.0);
 
         let mut result = SelectorBuilder::<f64>::new()
-            .lower(Constant(0.0))
-            .condition(Constant(0.5))
-            .falloff(Constant(0.25))
+            .lower(0.0)
+            .condition(0.5)
+            .falloff(0.25)
             .build();
 
         assert_eq!(result.sample_1d(0.0), 0.5);
@@ -105,10 +104,10 @@ mod tests {
         assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 0.5);
 
         let mut result = SelectorBuilder::<f32>::new()
-            .lower(Constant(0.0))
-            .upper(Constant(1.0))
-            .threadhold(Constant(0.5))
-            .condition(Constant(1.0))
+            .lower(0.0)
+            .upper(1.0)
+            .threadhold(0.5)
+            .condition(1.0)
             .build();
 
         assert_eq!(result.sample_1d(0.0), 1.0);
@@ -116,10 +115,10 @@ mod tests {
         assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 1.0);
 
         let mut result = SelectorBuilder::<f32>::new()
-            .lower(Constant(0.0))
-            .upper(Constant(1.0))
-            .threadhold(Constant(0.5))
-            .condition(Constant(0.0))
+            .lower(0.0)
+            .upper(1.0)
+            .threadhold(0.5)
+            .condition(0.0)
             .build();
 
         assert_eq!(result.sample_1d(0.0), 0.0);
@@ -127,11 +126,11 @@ mod tests {
         assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 0.0);
 
         let mut result = SelectorBuilder::<f32>::new()
-            .lower(Constant(0.0))
-            .upper(Constant(1.0))
-            .threadhold(Constant(0.5))
-            .falloff(Constant(0.25))
-            .condition(Constant(0.5))
+            .lower(0.0)
+            .upper(1.0)
+            .threadhold(0.5)
+            .falloff(0.25)
+            .condition(0.5)
             .build();
 
         assert_eq!(result.sample_1d(0.0), 0.5);
