@@ -1,7 +1,9 @@
 mod blender;
+mod gradient;
 mod perlin_noise;
 
 pub use blender::Blender;
+pub use gradient::Gradient;
 pub use perlin_noise::Perlin;
 
 use crate::float::Float;
