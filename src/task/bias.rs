@@ -1,58 +1,41 @@
+mod builder;
+
+pub use builder::*;
+
 use crate::{float::Float, math::ease_in_out};
 
 use super::{task::TaskSource, Task};
 
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
-pub struct BiasConfig<T> {
-    // The `min` field represents the minimum value of an exponent used
-    pub min: T,
-    // The `max` field represents the maximum value of an exponent used
-    pub max: T,
-}
-
 pub struct Bias<T: Float> {
     bias: TaskSource<T>,
     source: TaskSource<T>,
-    config: BiasConfig<T>,
+    // The `min` field represents the minimum value of an exponent used
+    min: T,
+    // The `max` field represents the maximum value of an exponent used
+    max: T,
 }
 
 impl<T: Float> Bias<T> {
-    #[allow(dead_code)]
-    pub fn new(source: TaskSource<T>, bias: TaskSource<T>) -> Self {
-        Self {
-            bias,
-            source,
-            config: BiasConfig {
-                min: T::from(1),
-                max: T::from(4),
-            },
-        }
+    fn eval<F: Fn(&mut dyn Task<T>) -> T>(&mut self, sampler: F) -> T {
+        let v = sampler(&mut self.source);
+        let b = sampler(&mut self.bias);
+        // ease in out with higher exponents will push the values further towards the extremes
+        let p = (b * self.max) + self.min;
+        ease_in_out(v, p)
     }
 }
 
 impl<T: Float> Task<T> for Bias<T> {
     fn sample_1d(&mut self, x: T) -> T {
-        let v = self.source.sample_1d(x);
-        let b = self.bias.sample_1d(x);
-        // ease in out with higher exponents will push the values further towards the extremes
-        let p = (b * self.config.max) + self.config.min;
-        return ease_in_out(v, p);
+        self.eval(|t| t.sample_1d(x))
     }
 
     fn sample_2d(&mut self, x: T, y: T) -> T {
-        let v = self.source.sample_2d(x, y);
-        let b = self.bias.sample_2d(x, y);
-        // ease in out with higher exponents will push the values further towards the extremes
-        let p = (b * self.config.max) + self.config.min;
-        return ease_in_out(v, p);
+        self.eval(|t| t.sample_2d(x, y))
     }
 
     fn sample_3d(&mut self, x: T, y: T, z: T) -> T {
-        let v = self.source.sample_3d(x, y, z);
-        let b = self.bias.sample_3d(x, y, z);
-        // ease in out with higher exponents will push the values further towards the extremes
-        let p = (b * self.config.max) + self.config.min;
-        return ease_in_out(v, p);
+        self.eval(|t| t.sample_3d(x, y, z))
     }
 }
 
@@ -62,7 +45,8 @@ mod tests {
 
     #[test]
     fn task_type_bias_tests() {
-        let mut result = Bias::new(TaskSource::Constant(0.5), TaskSource::Constant(1.0));
+        let mut result = BiasBuilder::new().bias(1.0).source(0.5).build();
+
         assert_eq!(result.sample_1d(1.0), 0.5);
         assert_eq!(result.sample_1d(2.0), 0.5);
         assert_eq!(result.sample_1d(3.0), 0.5);
@@ -75,7 +59,8 @@ mod tests {
         assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
         assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-        let mut result = Bias::new(TaskSource::Constant(0.25_f32), TaskSource::Constant(0.5_f32));
+        let mut result = BiasBuilder::<f32>::new().bias(0.5).source(0.25).build();
+
         assert_eq!(result.sample_1d(1.0_f32), 0.0625_f32);
         assert_eq!(result.sample_1d(2.0_f32), 0.0625_f32);
         assert_eq!(result.sample_1d(3.0_f32), 0.0625_f32);
