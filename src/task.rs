@@ -6,6 +6,7 @@ mod gradient;
 mod selector;
 mod task;
 mod task_tree;
+mod transform_domain;
 
 pub use aggregator::*;
 pub use bias::*;
@@ -15,6 +16,7 @@ pub use gradient::*;
 pub use selector::*;
 pub use task::*;
 pub use task_tree::*;
+pub use transform_domain::*;
 
 use crate::float::Float;
 

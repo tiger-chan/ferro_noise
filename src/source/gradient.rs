@@ -9,7 +9,7 @@ use super::Noise;
 
 const MAX_GRADIENT_ENTRY: usize = 3;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 struct Point<T: Float> {
     x: T,
     y: T,
@@ -92,7 +92,7 @@ impl<T: Float> Point<T> {
 /// let gradient = grad.sample_2d(0.5, 0.5);
 /// assert_eq!(gradient, 0.0);
 /// ```
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct Gradient<T: Float> {
     s1: Point<T>,
     dir: Point<T>,

@@ -6,6 +6,7 @@ use super::{task::TaskSource, Task};
 
 pub use builder::SelectorBuilder;
 
+#[derive(Clone, Debug)]
 pub struct Selector<T: Float> {
     blender: Blender<T>,
     condition: TaskSource<T>,

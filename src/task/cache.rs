@@ -18,6 +18,7 @@ const CACHE_1D: usize = 0;
 const CACHE_2D: usize = 1;
 const CACHE_3D: usize = 2;
 
+#[derive(Clone, Debug)]
 pub struct Cache<T: Float> {
     store: [Option<CacheValue<T>>; MAX_CACHE_ENTRY],
     source: TaskSource<T>,

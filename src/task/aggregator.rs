@@ -14,7 +14,7 @@ pub enum Operation {
     Min,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Aggregator<T: Float> {
     op: Operation,
     initial: T,

@@ -3,6 +3,8 @@ mod builder;
 mod fbm;
 mod ridged_multi;
 
+pub use builder::FractalBuilder;
+
 use crate::{float::Float, source::Noise};
 
 use self::ridged_multi::PreCalc;
@@ -47,6 +49,7 @@ impl<T: Float> Default for NoiseConfig<T> {
     }
 }
 
+#[derive(Debug)]
 pub struct Fractal<T: Float> {
     config: NoiseConfig<T>,
     noise: Box<dyn Noise<T>>,

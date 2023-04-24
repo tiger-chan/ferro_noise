@@ -1,16 +1,11 @@
 use crate::{
     float::Float,
-    task::{TaskSource, TaskTree},
+    task::{TaskSource, TaskTree, NameOrSource},
 };
 
 use super::Cache;
 
 pub const MAX_CACHE_ENTRY: usize = 3;
-
-enum NameOrSource<T: Float> {
-    Named(String),
-    Source(TaskSource<T>),
-}
 
 pub struct CacheBuilder<T: Float> {
     source: NameOrSource<T>,

@@ -108,7 +108,7 @@ mod details {
             5 => -x - y,
             6 => -y,
             7 => x - y,
-            _ => T::from(0.0),
+            _ => T::ZERO,
         }
     }
 
@@ -136,7 +136,7 @@ mod details {
             14 => -y + z,
             15 => -y - z,
             // This can't happen
-            _ => T::from(0.0),
+            _ => T::ZERO,
         }
     }
 
@@ -203,7 +203,7 @@ impl<T: Float> Noise<T> for Perlin<T> {
     fn sample_1d(&mut self, x: T) -> T {
         const INDEX_MASK: usize = 255;
         let x0 = x.floor();
-        let x1 = x0 + T::from(1.0);
+        let x1 = x0 + T::ONE;
 
         let dx = x - x0;
         let u = self.fade(dx);
@@ -227,8 +227,8 @@ impl<T: Float> Noise<T> for Perlin<T> {
         let yi = y0.as_index() & INDEX_MASK;
         let x0 = x - x0;
         let y0 = y - y0;
-        let x1 = x0 - T::from(1.0);
-        let y1 = y0 - T::from(1.0);
+        let x1 = x0 - T::ONE;
+        let y1 = y0 - T::ONE;
 
         let aa = self.perm[xi] + yi;
         let ab = aa + 1;
@@ -249,7 +249,8 @@ impl<T: Float> Noise<T> for Perlin<T> {
             u,
         );
 
-        lerp(l1, l2, v)
+		let alpha = clamp((lerp(l1, l2, v) + T::ONE) / T::TWO, T::ZERO, T::ONE);
+		lerp(-T::ONE, T::ONE, alpha)
     }
 
     fn sample_3d(&mut self, x: T, y: T, z: T) -> T {
@@ -267,9 +268,9 @@ impl<T: Float> Noise<T> for Perlin<T> {
         let x0 = x - x0;
         let y0 = y - y0;
         let z0 = z - z0;
-        let x1 = x0 - T::from(1.0);
-        let y1 = y0 - T::from(1.0);
-        let z1 = z0 - T::from(1.0);
+        let x1 = x0 - T::ONE;
+        let y1 = y0 - T::ONE;
+        let z1 = z0 - T::ONE;
 
         // Hash coordinates of the 8 cube corners
         let a = self.perm[xi] + yi;
@@ -312,7 +313,8 @@ impl<T: Float> Noise<T> for Perlin<T> {
         let lv1 = lerp(lu1, lu2, v);
         let lv2 = lerp(lu3, lu4, v);
 
-        lerp(lv1, lv2, w)
+        let alpha = clamp((lerp(lv1, lv2, w) + T::ONE) / T::TWO, T::ZERO, T::ONE);
+		lerp(-T::ONE, T::ONE, alpha)
     }
 }
 
