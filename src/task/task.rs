@@ -1,19 +1,22 @@
+mod named_or_source;
+pub(crate) use named_or_source::*;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::float::Float;
 
-use super::{Aggregator, Bias, Cache, Fractal, Gradient, Selector, Task};
+use super::{Aggregator, Bias, Cache, Fractal, Gradient, Selector, Task, TransformDomain};
 
 #[allow(dead_code)]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TaskSource<T: Float> {
     Aggregate(Aggregator<T>),
     Bias(Rc<RefCell<Bias<T>>>),
     Cache(Rc<RefCell<Cache<T>>>),
     Constant(T),
     Fractal(Rc<RefCell<Fractal<T>>>),
-    Gradient(Gradient<T>),
+    Gradient(Rc<RefCell<Gradient<T>>>),
     Selector(Rc<RefCell<Selector<T>>>),
+    Domain(Rc<RefCell<TransformDomain<T>>>),
 }
 
 impl<T: Float> From<Aggregator<T>> for TaskSource<T> {
@@ -48,13 +51,19 @@ impl<T: Float> From<Fractal<T>> for TaskSource<T> {
 
 impl<T: Float> From<Gradient<T>> for TaskSource<T> {
     fn from(value: Gradient<T>) -> Self {
-        Self::Gradient(value)
+        Self::Gradient(Rc::new(RefCell::new(value)))
     }
 }
 
 impl<T: Float> From<Selector<T>> for TaskSource<T> {
     fn from(value: Selector<T>) -> Self {
         Self::Selector(Rc::new(RefCell::new(value)))
+    }
+}
+
+impl<T: Float> From<TransformDomain<T>> for TaskSource<T> {
+    fn from(value: TransformDomain<T>) -> Self {
+        Self::Domain(Rc::new(RefCell::new(value)))
     }
 }
 
@@ -66,8 +75,9 @@ impl<T: Float> Task<T> for TaskSource<T> {
             Self::Cache(t) => t.borrow_mut().sample_1d(x),
             Self::Constant(v) => v.clone(),
             Self::Fractal(t) => t.borrow_mut().sample_1d(x),
-            Self::Gradient(t) => t.sample_1d(x),
+            Self::Gradient(t) => t.borrow_mut().sample_1d(x),
             Self::Selector(t) => t.borrow_mut().sample_1d(x),
+            Self::Domain(t) => t.borrow_mut().sample_1d(x),
         }
     }
 
@@ -78,8 +88,9 @@ impl<T: Float> Task<T> for TaskSource<T> {
             Self::Cache(t) => t.borrow_mut().sample_2d(x, y),
             Self::Constant(v) => v.clone(),
             Self::Fractal(t) => t.borrow_mut().sample_2d(x, y),
-            Self::Gradient(t) => t.sample_2d(x, y),
+            Self::Gradient(t) => t.borrow_mut().sample_2d(x, y),
             Self::Selector(t) => t.borrow_mut().sample_2d(x, y),
+            Self::Domain(t) => t.borrow_mut().sample_2d(x, y),
         }
     }
 
@@ -90,8 +101,9 @@ impl<T: Float> Task<T> for TaskSource<T> {
             Self::Cache(t) => t.borrow_mut().sample_3d(x, y, z),
             Self::Constant(v) => v.clone(),
             Self::Fractal(t) => t.borrow_mut().sample_3d(x, y, z),
-            Self::Gradient(t) => t.sample_3d(x, y, z),
+            Self::Gradient(t) => t.borrow_mut().sample_3d(x, y, z),
             Self::Selector(t) => t.borrow_mut().sample_3d(x, y, z),
+            Self::Domain(t) => t.borrow_mut().sample_3d(x, y, z),
         }
     }
 }

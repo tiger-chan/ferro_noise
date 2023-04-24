@@ -1,11 +1,6 @@
-use crate::float::Float;
+use crate::{float::Float, task::NameOrSource};
 
 use super::{super::TaskTree, Bias, TaskSource};
-
-enum NameOrSource<T: Float> {
-    Named(String),
-    Source(TaskSource<T>),
-}
 
 pub struct BiasBuilder<T: Float> {
     bias: NameOrSource<T>,

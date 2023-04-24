@@ -9,7 +9,7 @@ use super::Task;
 
 pub use builder::GradientBuilder;
 
-#[derive(Clone)]
+#[derive(Debug, PartialEq, PartialOrd)]
 pub struct Gradient<T: Float> {
     noise: source::Gradient<T>,
 }

@@ -4,6 +4,7 @@ use crate::{float::Float, source::Noise};
 
 pub const MAX_OCTAVES: usize = 20;
 
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct PreCalc<T: Float> {
     pub offset: T,
     /// Each successive gain is raised to the power of -h

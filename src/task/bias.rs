@@ -6,6 +6,7 @@ use crate::{float::Float, math::ease_in_out};
 
 use super::{task::TaskSource, Task};
 
+#[derive(Clone, Debug)]
 pub struct Bias<T: Float> {
     bias: TaskSource<T>,
     source: TaskSource<T>,
