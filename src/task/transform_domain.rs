@@ -6,8 +6,17 @@ use crate::float::Float;
 
 use super::{Task, TaskSource};
 
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+#[cfg(feature = "serialization")]
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(Deserialize, Serialize),
+    serde(rename_all = "snake_case")
+)]
 pub enum DomainOperation {
+    #[default]
     Translate,
     Scale,
 }

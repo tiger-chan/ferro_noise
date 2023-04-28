@@ -9,13 +9,23 @@ use crate::{float::Float, source::Noise};
 
 use self::ridged_multi::PreCalc;
 
+#[cfg(feature = "serialization")]
+use serde::{Deserialize, Serialize};
+
 use super::Task;
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(
+    feature = "serialization",
+    derive(Deserialize, Serialize),
+    serde(rename_all = "snake_case")
+)]
 pub enum FractalType {
     /// Billowing
     Billowing,
+    #[cfg_attr(feature = "serialization", serde(alias = "fbm"))]
+    #[default]
     /// Fractal Brownian Motion
     Brownian,
     /// Ridged Multi Fractal
