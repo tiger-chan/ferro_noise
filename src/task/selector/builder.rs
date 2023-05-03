@@ -12,7 +12,7 @@ pub struct SelectorBuilder<T: Float> {
     lower: NameOrSource<T>,
     upper: NameOrSource<T>,
     falloff: NameOrSource<T>,
-    /// threadhold/pivot/boundry to determine when lower or upper is used
+    /// threshold/pivot/boundry to determine when lower or upper is used
     threshold: NameOrSource<T>,
 }
 
@@ -88,7 +88,7 @@ impl<T: Float> SelectorBuilder<T> {
         self
     }
 
-    pub fn named_threadhold<S: Into<String>>(&mut self, name: S) -> &mut Self {
+    pub fn named_threshold<S: Into<String>>(&mut self, name: S) -> &mut Self {
         self.threshold = NameOrSource::Named(name.into());
         self
     }
@@ -98,7 +98,7 @@ impl<T: Float> SelectorBuilder<T> {
         self
     }
 
-    pub fn threadhold<V: Into<TaskSource<T>>>(&mut self, threshold: V) -> &mut Self {
+    pub fn threshold<V: Into<TaskSource<T>>>(&mut self, threshold: V) -> &mut Self {
         self.threshold = NameOrSource::Source(threshold.into());
         self
     }

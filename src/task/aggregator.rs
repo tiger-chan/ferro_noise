@@ -2,9 +2,17 @@ use crate::float::Float;
 
 use super::{task::TaskSource, Task, TaskTree};
 
-#[allow(dead_code)]
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize),
+    serde(rename_all = "snake_case")
+)]
 pub enum Operation {
+    #[default]
     Add,
     Avg,
     Sub,

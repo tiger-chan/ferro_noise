@@ -18,10 +18,12 @@ pub trait Float<T = Self>:
     + Copy
     + From<f32>
     + From<u16>
+    + From<i16>
     + Default
     + 'static
 {
     fn abs(self) -> Self;
+    fn as_float(v: f64) -> Self;
     fn as_index(self) -> usize;
     fn floor(self) -> Self;
     fn powf(self, n: Self) -> Self;
@@ -39,6 +41,10 @@ pub trait Float<T = Self>:
 impl Float for f32 {
     fn abs(self) -> Self {
         self.abs()
+    }
+
+    fn as_float(v: f64) -> Self {
+        v as f32
     }
 
     fn as_index(self) -> usize {
@@ -73,6 +79,10 @@ impl Float for f32 {
 impl Float for f64 {
     fn abs(self) -> Self {
         self.abs()
+    }
+
+    fn as_float(v: f64) -> Self {
+        v.into()
     }
 
     fn as_index(self) -> usize {

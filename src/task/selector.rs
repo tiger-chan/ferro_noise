@@ -13,7 +13,7 @@ pub struct Selector<T: Float> {
     lower: TaskSource<T>,
     upper: TaskSource<T>,
     falloff: TaskSource<T>,
-    /// threadhold/pivot/boundry to determine when lower or upper is used
+    /// threshold/pivot/boundry to determine when lower or upper is used
     threshold: TaskSource<T>,
 }
 
@@ -107,7 +107,7 @@ mod tests {
         let mut result = SelectorBuilder::<f32>::new()
             .lower(0.0)
             .upper(1.0)
-            .threadhold(0.5)
+            .threshold(0.5)
             .condition(1.0)
             .build();
 
@@ -118,7 +118,7 @@ mod tests {
         let mut result = SelectorBuilder::<f32>::new()
             .lower(0.0)
             .upper(1.0)
-            .threadhold(0.5)
+            .threshold(0.5)
             .condition(0.0)
             .build();
 
@@ -129,7 +129,7 @@ mod tests {
         let mut result = SelectorBuilder::<f32>::new()
             .lower(0.0)
             .upper(1.0)
-            .threadhold(0.5)
+            .threshold(0.5)
             .falloff(0.25)
             .condition(0.5)
             .build();
