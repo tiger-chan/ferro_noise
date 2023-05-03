@@ -1,14 +1,21 @@
 use serde::{Deserialize, Serialize};
 
+use crate::{
+    float::Float,
+    task::{GradientBuilder, TaskSource, TaskTree},
+};
+
+use super::{IntoTaskSource, TaskDependencies};
+
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, PartialOrd)]
 #[serde(default)]
 pub struct GradientConfig {
-    x1: f64,
-    y1: f64,
-    z1: f64,
-    x2: f64,
-    y2: f64,
-    z2: f64,
+    pub x1: f64,
+    pub y1: f64,
+    pub z1: f64,
+    pub x2: f64,
+    pub y2: f64,
+    pub z2: f64,
 }
 
 impl Default for GradientConfig {
@@ -21,6 +28,32 @@ impl Default for GradientConfig {
             y2: 1.0,
             z2: 0.0,
         }
+    }
+}
+
+impl TaskDependencies for GradientConfig {
+    fn dependencies(&self) -> Vec<String> {
+        vec![]
+    }
+}
+
+impl<T: Float> IntoTaskSource<T> for GradientConfig {
+    fn config_into(&self, _: &TaskTree<T>) -> TaskSource<T> {
+        let mut builder = GradientBuilder::<T>::new();
+
+        builder
+            .s1([
+                T::as_float(self.x1),
+                T::as_float(self.y1),
+                T::as_float(self.z1),
+            ])
+            .s2([
+                T::as_float(self.x2),
+                T::as_float(self.y2),
+                T::as_float(self.z2),
+            ]);
+
+        builder.build().into()
     }
 }
 

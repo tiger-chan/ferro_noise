@@ -11,5 +11,4 @@ serde = { version = "1.0.160", optional = true, features = ["derive"] }
 toml = { version = "0.7.3", optional = true }
 
 [features]
-default = ["serialization"]
-serialization = ["serde", "toml"]
+default = ["serde", "toml"]

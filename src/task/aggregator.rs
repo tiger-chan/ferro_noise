@@ -2,12 +2,12 @@ use crate::float::Float;
 
 use super::{task::TaskSource, Task, TaskTree};
 
-#[cfg(feature = "serialization")]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd)]
 #[cfg_attr(
-    feature = "serialization",
+    feature = "serde",
     derive(Deserialize, Serialize),
     serde(rename_all = "snake_case")
 )]

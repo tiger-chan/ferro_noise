@@ -1,14 +1,16 @@
 use serde::{Deserialize, Serialize};
 
-use super::name_or_const::NameOrConst;
+use crate::{float::Float, task::BiasBuilder};
+
+use super::{name_or_const::*, IntoTaskSource, TaskDependencies};
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, PartialOrd)]
 #[serde(default)]
 pub struct BiasConfig {
-    bias: NameOrConst,
-    source: NameOrConst,
-    min: f64,
-    max: f64,
+    pub bias: NameOrConst,
+    pub source: NameOrConst,
+    pub min: f64,
+    pub max: f64,
 }
 
 impl Default for BiasConfig {
@@ -19,6 +21,45 @@ impl Default for BiasConfig {
             min: 1.0,
             max: 4.0,
         }
+    }
+}
+
+impl TaskDependencies for BiasConfig {
+    fn dependencies(&self) -> Vec<String> {
+        let mut r = vec![];
+        push_named_to_vec!(r, self.bias);
+        push_named_to_vec!(r, self.source);
+        r
+    }
+}
+
+impl<T: Float> IntoTaskSource<T> for BiasConfig {
+    fn config_into(&self, tree: &crate::task::TaskTree<T>) -> crate::task::TaskSource<T> {
+        let mut builder = BiasBuilder::<T>::new();
+
+        builder
+            .min(T::as_float(self.min))
+            .max(T::as_float(self.max));
+
+        match &self.source {
+            NameOrConst::Named(x) => {
+                builder.named_source(x);
+            }
+            NameOrConst::Value(x) => {
+                builder.source(T::as_float(*x));
+            }
+        }
+
+        match &self.bias {
+            NameOrConst::Named(x) => {
+                builder.named_bias(x);
+            }
+            NameOrConst::Value(x) => {
+                builder.bias(T::as_float(*x));
+            }
+        }
+
+        builder.link(tree).build().into()
     }
 }
 

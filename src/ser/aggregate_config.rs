@@ -1,13 +1,16 @@
-use super::name_or_const::NameOrConst;
-use crate::task::Operation;
+use super::{name_or_const::NameOrConst, IntoTaskSource, TaskDependencies};
+use crate::{
+    float::Float,
+    task::{AggregatorBuilder, Operation},
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, PartialOrd)]
 #[serde(rename_all = "snake_case", default)]
 pub struct AggregateConfig {
-    operator: Operation,
-    initial: f64,
-    source: Vec<NameOrConst>,
+    pub operator: Operation,
+    pub initial: f64,
+    pub source: Vec<NameOrConst>,
 }
 
 impl Default for AggregateConfig {
@@ -17,6 +20,42 @@ impl Default for AggregateConfig {
             initial: 0.0,
             source: vec![0.0.into()],
         }
+    }
+}
+
+impl TaskDependencies for AggregateConfig {
+    fn dependencies(&self) -> Vec<String> {
+        self.source
+            .iter()
+            .filter(|x| x.is_named())
+            .map(|x| match x {
+                NameOrConst::Named(x) => x.clone(),
+                _ => String::new(),
+            })
+            .collect()
+    }
+}
+
+impl<T: Float> IntoTaskSource<T> for AggregateConfig {
+    fn config_into(&self, tree: &crate::task::TaskTree<T>) -> crate::task::TaskSource<T> {
+        let mut builder = AggregatorBuilder::<T>::new();
+
+        builder
+            .initial(T::as_float(self.initial))
+            .operation(self.operator);
+
+        for source in &self.source {
+            match source {
+                NameOrConst::Named(x) => {
+                    builder.add_named_task(x);
+                }
+                NameOrConst::Value(x) => {
+                    builder.add_task(T::as_float(*x));
+                }
+            }
+        }
+
+        builder.link(tree).build().into()
     }
 }
 

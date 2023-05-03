@@ -1,19 +1,26 @@
 use serde::{Deserialize, Serialize};
 
-use super::{fractal_config::FractalBlender, name_or_const::NameOrConst};
+use crate::{
+    float::Float,
+    math::{cubic_curve, linear_curve, quintic_curve},
+    source::Blender,
+    task::SelectorBuilder,
+};
+
+use super::{fractal_config::FractalBlender, name_or_const::*, IntoTaskSource, TaskDependencies};
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, PartialOrd)]
 #[serde(default)]
 pub struct SelectorConfig {
     #[serde(alias = "blender")]
     #[serde(alias = "curve")]
-    interp: FractalBlender,
-    condition: NameOrConst,
-    lower: NameOrConst,
-    upper: NameOrConst,
-    falloff: NameOrConst,
+    pub interp: FractalBlender,
+    pub condition: NameOrConst,
+    pub lower: NameOrConst,
+    pub upper: NameOrConst,
+    pub falloff: NameOrConst,
     /// threadhold/pivot/boundry to determine when lower or upper is used
-    threshold: NameOrConst,
+    pub threshold: NameOrConst,
 }
 
 impl Default for SelectorConfig {
@@ -26,6 +33,39 @@ impl Default for SelectorConfig {
             falloff: 0.0.into(),
             threshold: 0.0.into(),
         }
+    }
+}
+
+impl TaskDependencies for SelectorConfig {
+    fn dependencies(&self) -> Vec<String> {
+        let mut r = vec![];
+        push_named_to_vec!(r, self.condition);
+        push_named_to_vec!(r, self.lower);
+        push_named_to_vec!(r, self.upper);
+        push_named_to_vec!(r, self.falloff);
+        push_named_to_vec!(r, self.threshold);
+        r
+    }
+}
+
+impl<T: Float> IntoTaskSource<T> for SelectorConfig {
+    fn config_into(&self, tree: &crate::task::TaskTree<T>) -> crate::task::TaskSource<T> {
+        let mut builder = SelectorBuilder::<T>::new();
+
+        let blender: Blender<T> = match self.interp {
+            FractalBlender::Cubic => cubic_curve::<T>,
+            FractalBlender::Linear => linear_curve::<T>,
+            FractalBlender::Quintic => quintic_curve::<T>,
+        };
+
+        builder.blender(blender);
+        add_task_to_builder!(self.condition, builder, condition, named_condition, tree);
+        add_task_to_builder!(self.lower, builder, lower, named_lower, tree);
+        add_task_to_builder!(self.upper, builder, upper, named_upper, tree);
+        add_task_to_builder!(self.falloff, builder, falloff, named_falloff, tree);
+        add_task_to_builder!(self.threshold, builder, threshold, named_threshold, tree);
+
+        builder.link(tree).build().into()
     }
 }
 

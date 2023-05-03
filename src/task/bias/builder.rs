@@ -15,7 +15,7 @@ impl<T: Float> Default for BiasBuilder<T> {
             bias: NameOrSource::Source(T::ZERO.into()),
             source: NameOrSource::Source(T::ZERO.into()),
             min: T::ONE,
-            max: T::from(4),
+            max: T::from(4.0),
         }
     }
 }
@@ -42,7 +42,7 @@ impl<T: Float> BiasBuilder<T> {
                 _ => panic!("BiasBuilder::link must be called if BiasBuilder::named_bias is used"),
             },
             min: T::ONE,
-            max: T::from(4),
+            max: T::from(4.0),
         }
     }
 
