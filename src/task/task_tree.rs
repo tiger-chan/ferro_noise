@@ -24,6 +24,10 @@ impl<T: Float> TaskTree<T> {
         self.tasks.get(&name.into())
     }
 
+	pub fn get_mut<S: Into<String>>(&mut self, name: S) -> Option<&mut TaskSource<T>> {
+        self.tasks.get_mut(&name.into())
+    }
+
     pub fn sample_1d<S: Into<String>>(&mut self, name: S, x: T) -> T {
         if let Some(task) = &mut self.tasks.get_mut(&name.into()) {
             task.sample_1d(x)

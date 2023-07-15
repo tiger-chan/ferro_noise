@@ -153,7 +153,7 @@ fn sort_tasks(tasks: &HashMap<String, TaskConfig>) -> Result<Vec<String>, String
 #[cfg(feature = "toml")]
 pub mod toml {
     use super::*;
-    pub fn from_str(data: impl Into<String>) -> Result<Box<TaskTree<f64>>, String> {
+    pub fn from_str<U: Float>(data: impl Into<String>) -> Result<Box<TaskTree<U>>, String> {
         let result: Result<HashMap<String, TaskConfig>, ::toml::de::Error> =
             ::toml::from_str(&data.into());
         match result {
@@ -163,7 +163,7 @@ pub mod toml {
 
                 for task_name in sorted_tasks {
                     let config: &TaskConfig = result.entry(task_name.clone()).or_default();
-                    let task: TaskSource<f64> = config.config_into(tree.as_ref());
+                    let task: TaskSource<U> = config.config_into(tree.as_ref());
                     tree.add_task(&task_name, task);
                 }
 
