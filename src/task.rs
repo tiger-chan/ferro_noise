@@ -8,26 +8,46 @@ mod task;
 mod task_tree;
 mod transform_domain;
 
-pub use aggregator::*;
-pub use bias::*;
-pub use cache::*;
-pub use fractal::*;
-pub use gradient::*;
-pub use selector::*;
-pub use task::*;
-pub use task_tree::*;
-pub use transform_domain::*;
+pub(crate) use task::{named_to_task, source_or_message};
 
-use crate::float::Float;
+macro_rules! task_type {
+    ($type: ty) => {
+        /// Trait for generating noise values.
+        pub trait Task {
+            /// Evaluates the noise function at the given x-coordinate.
+            fn sample_1d(&mut self, x: $type) -> $type;
 
-/// Trait for generating noise values.
-pub trait Task<T: Float> {
-    /// Evaluates the noise function at the given x-coordinate.
-    fn sample_1d(&mut self, x: T) -> T;
+            /// Evaluates the noise function at the given (x, y) coordinates.
+            fn sample_2d(&mut self, x: $type, y: $type) -> $type;
 
-    /// Evaluates the noise function at the given (x, y) coordinates.
-    fn sample_2d(&mut self, x: T, y: T) -> T;
+            /// Evaluates the noise function at the given (x, y, z) coordinates.
+            fn sample_3d(&mut self, x: $type, y: $type, z: $type) -> $type;
+        }
+    };
+}
 
-    /// Evaluates the noise function at the given (x, y, z) coordinates.
-    fn sample_3d(&mut self, x: T, y: T, z: T) -> T;
+pub mod f32 {
+    pub use super::aggregator::f32::*;
+    pub use super::bias::f32::*;
+    pub use super::cache::f32::*;
+    pub use super::fractal::f32::*;
+    pub use super::gradient::f32::*;
+    pub use super::selector::f32::*;
+    pub use super::task::f32::*;
+    pub use super::task_tree::f32::*;
+    pub use super::transform_domain::f32::*;
+    task_type!(f32);
+}
+
+pub mod f64 {
+    pub use super::aggregator::f64::*;
+    pub use super::bias::f64::*;
+    pub use super::cache::f64::*;
+    pub use super::fractal::f64::*;
+    pub use super::gradient::f64::*;
+    pub use super::selector::f64::*;
+    pub use super::task::f64::*;
+    pub use super::task_tree::f64::*;
+    pub use super::transform_domain::f64::*;
+    task_type!(f64);
 }

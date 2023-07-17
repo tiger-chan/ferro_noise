@@ -1,219 +1,261 @@
-use std::ops::{Add, Mul, Sub};
-
-pub fn min<T>(a: T, b: T) -> T
-where
-    T: PartialOrd,
-{
-    if a < b {
-        a
-    } else {
-        b
-    }
+macro_rules! clamp {
+    ($type: ty) => {
+        /// Clamps a value between a minimum and maximum value.
+        ///
+        /// # Arguments
+        ///
+        /// * `v`: The value to clamp
+        /// * `min`: The minimum value
+        /// * `max`: The maximum value
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// extern crate ferro_noise;
+        /// use ferro_noise::math::f32::{clamp};
+        ///
+        /// let result = clamp(6.0, 1.0, 5.0);
+        /// assert_eq!(result, 5.0);
+        /// ```
+        pub fn clamp(v: $type, min: $type, max: $type) -> $type {
+            v.min(max).max(min)
+        }
+    };
 }
 
-pub fn max<T>(a: T, b: T) -> T
-where
-    T: PartialOrd,
-{
-    if a > b {
-        a
-    } else {
-        b
-    }
+macro_rules! cubic {
+    ($type: ty) => {
+        /// Evaluates a cubic curve at a given time `t`, where `t` is typically in the range [0, 1].
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// extern crate ferro_noise;
+        /// use ferro_noise::math::f32::cubic_curve;
+        ///
+        /// let result = cubic_curve(2.0);
+        /// assert_eq!(result, -4.0);
+        /// ```
+        ///
+        /// # Notes
+        ///
+        /// This cubic curve function uses the formula `3t^2 − 2t^3`, where `t` is typically in the
+        /// range [0, 1]. The function returns `0` at `t = 1.5` and `-4` at `t = 2`.
+        pub fn cubic_curve(t: $type) -> $type {
+            // https://en.wikipedia.org/wiki/Cubic_Hermite_spline
+            // 3t^2 − 2t^3
+            (t * t) * (3.0 - (2.0 * t))
+        }
+    };
 }
 
-/// Linearly interpolate between two values by a given alpha value.
-///
-/// # Arguments
-///
-/// * `v0`: The starting value to interpolate from
-/// * `v1`: The ending value to interpolate to
-/// * `alpha`: The alpha value, typically in the range [0, 1]
-///
-/// # Examples
-///
-/// ```
-/// extern crate ferro_noise;
-/// use ferro_noise::math::{lerp};
-///
-/// let result = lerp(0.0, 1.0, 0.4);
-/// assert_eq!(result, 0.4);
-/// ```
-pub fn lerp<T, A>(v0: T, v1: T, alpha: A) -> T
-where
-    T: Mul<A, Output = T> + Add<Output = T>,
-    A: From<f32> + Sub<A, Output = A> + Copy,
-{
-    let beta: A = 1.0.into();
-    let va0 = v0 * (beta - alpha);
-    let va1 = v1 * alpha;
-    va0 + va1
+macro_rules! lerp {
+    ($type: ty) => {
+        /// Linearly interpolate between two values by a given alpha value.
+        ///
+        /// # Arguments
+        ///
+        /// * `a`: The starting value to interpolate from
+        /// * `b`: The ending value to interpolate to
+        /// * `f`: The alpha value, typically in the range [0, 1]
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// extern crate ferro_noise;
+        /// use ferro_noise::math::f32::lerp;
+        ///
+        /// let result = lerp(0.0, 1.0, 0.4);
+        /// assert_eq!(result, 0.4);
+        /// ```
+        pub fn lerp(a: $type, b: $type, f: $type) -> $type {
+            a * (1.0 - f) + f * b
+        }
+    };
 }
 
-/// Clamps a value between a minimum and maximum value.
-///
-/// # Arguments
-///
-/// * `v`: The value to clamp
-/// * `min`: The minimum value
-/// * `max`: The maximum value
-///
-/// # Examples
-///
-/// ```
-/// extern crate ferro_noise;
-/// use ferro_noise::math::{clamp};
-///
-/// let result = clamp(6.0, 1.0, 5.0);
-/// assert_eq!(result, 5.0);
-/// ```
-pub fn clamp<T>(v: T, min: T, max: T) -> T
-where
-    T: PartialOrd + PartialEq + Copy,
-{
-    if v > max {
-        max
-    } else if v < min {
-        min
-    } else {
-        v
-    }
+macro_rules! linear {
+    ($type: ty) => {
+        pub fn linear_curve(t: $type) -> $type {
+            t
+        }
+    };
 }
 
-pub fn linear_curve<T>(t: T) -> T {
-    t
+macro_rules! max {
+    ($type: ty) => {
+        pub fn max(a: $type, b: $type) -> $type {
+            a.max(b)
+        }
+    };
 }
 
-/// Evaluates a cubic curve at a given time `t`, where `t` is typically in the range [0, 1].
-///
-/// # Examples
-///
-/// ```
-/// extern crate ferro_noise;
-/// use ferro_noise::math::cubic_curve;
-///
-/// let result = cubic_curve(2.0);
-/// assert_eq!(result, -4.0);
-/// ```
-///
-/// # Notes
-///
-/// This cubic curve function uses the formula `3t^2 − 2t^3`, where `t` is typically in the
-/// range [0, 1]. The function returns `0` at `t = 1.5` and `-4` at `t = 2`.
-pub fn cubic_curve<T>(t: T) -> T
-where
-    T: From<u16> + Mul<T, Output = T> + Sub<T, Output = T> + Copy,
-{
-    let two: T = 2.into();
-    let three: T = 3.into();
-    // https://en.wikipedia.org/wiki/Cubic_Hermite_spline
-    // 3t^2 − 2t^3
-    (t * t) * (three - (two * t))
+macro_rules! min {
+    ($type: ty) => {
+        pub fn min(a: $type, b: $type) -> $type {
+            a.min(b)
+        }
+    };
 }
 
-/// Computes a quintic curve value for the given input value `t`.
-///
-/// # Arguments
-///
-/// * `t` - The input value for which to compute the quintic curve value.
-///
-/// # Examples
-///
-/// ```
-/// extern crate ferro_noise;
-/// use ferro_noise::math::quintic_curve;
-///
-/// let result = quintic_curve(1);
-/// assert_eq!(result, 1);
-/// ```
-pub fn quintic_curve<T>(t: T) -> T
-where
-    T: From<i16> + Mul<T, Output = T> + Sub<T, Output = T> + Add<T, Output = T> + Copy,
-{
-    let six: T = T::from(6);
-    let ten: T = T::from(10);
-    let fifteen: T = T::from(15);
-    // https://mrl.nyu.edu/~perlin/noise/
-    // 6t^5 - 15t^4 + 10t^3
-    return t * t * t * (t * (t * six - fifteen) + ten);
+macro_rules! nearly_eq {
+    ($type: ty) => {
+        /// Simple check for EPSILON difference to determine equality
+        pub fn nearly_eq(a: $type, b: $type) -> bool {
+            (a - b).abs() < <$type>::EPSILON
+        }
+    };
+}
+
+macro_rules! quintic {
+    ($type: ty) => {
+        /// Computes a quintic curve value for the given input value `t`.
+        ///
+        /// # Arguments
+        ///
+        /// * `t` - The input value for which to compute the quintic curve value.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// extern crate ferro_noise;
+        /// use ferro_noise::math::f32::quintic_curve;
+        ///
+        /// let result = quintic_curve(1.0);
+        /// assert_eq!(result, 1.0);
+        /// ```
+        pub fn quintic_curve(t: $type) -> $type {
+            // https://mrl.nyu.edu/~perlin/noise/
+            // 6t^5 - 15t^4 + 10t^3
+            return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+        }
+    };
+}
+
+pub mod f32 {
+    clamp!(f32);
+	cubic!(f32);
+    lerp!(f32);
+	linear!(f32);
+    min!(f32);
+    max!(f32);
+    nearly_eq!(f32);
+	quintic!(f32);
+}
+
+pub mod f64 {
+    clamp!(f64);
+	cubic!(f64);
+    lerp!(f64);
+	linear!(f64);
+    min!(f64);
+    max!(f64);
+    nearly_eq!(f64);
+	quintic!(f64);
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
-    #[test]
-    fn lerp_tests() {
-        let result = lerp(0.0, 1.0, 0.4);
-        assert_eq!(result, 0.4);
-
-        let result = lerp(0f32, 10f32, 0.4f32);
-        assert_eq!(result, 4f32);
-    }
-
-    #[test]
-    fn clamp_tests() {
-        let result = clamp(0, 1, 5);
-        assert_eq!(result, 1);
-
-        let result = clamp(2, 1, 5);
-        assert_eq!(result, 2);
-
-        let result = clamp(6, 1, 5);
-        assert_eq!(result, 5);
-
-        let result = clamp(0.0, 1.0, 5.0);
-        assert_eq!(result, 1.0);
-
-        let result = clamp(2.0, 1.0, 5.0);
-        assert_eq!(result, 2.0);
-
-        let result = clamp(6.0, 1.0, 5.0);
-        assert_eq!(result, 5.0);
-    }
-
-    #[test]
-    fn cubic_curve_tests() {
-        let result = cubic_curve(0);
-        assert_eq!(result, 0);
-
-        let result = cubic_curve(1);
-        assert_eq!(result, 1);
-
-        let result = cubic_curve(2);
-        assert_eq!(result, -4);
-
-        let result = cubic_curve(0.0_f32);
-        assert_eq!(result, 0.0);
-
-        let result = cubic_curve(1.0);
-        assert_eq!(result, 1.0);
-
-        let result = cubic_curve(1.5);
-        assert_eq!(result, 0.0);
-
-        let result = cubic_curve(2.0);
-        assert_eq!(result, -4.0);
-    }
-
-    #[test]
-    fn quintic_curve_tests() {
-        let result = quintic_curve(0);
-        assert_eq!(result, 0);
-
-        let result = quintic_curve(1);
-        assert_eq!(result, 1);
-
-        let result = quintic_curve(2);
-        assert_eq!(result, 32);
-
-        let result = quintic_curve(0.0_f32);
-        assert_eq!(result, 0.0);
-
-        let result = quintic_curve(1.0);
-        assert_eq!(result, 1.0);
-
-        let result = quintic_curve(2.0);
-        assert_eq!(result, 32.0);
-    }
+	mod f32 {
+		use crate::math::f32::*;
+		#[test]
+		fn lerp_tests() {
+			let result = lerp(0.0, 1.0, 0.4);
+			assert_eq!(result, 0.4);
+	
+			let result = lerp(0.0, 10.0, 0.4);
+			assert_eq!(result, 4.0);
+		}
+	
+		#[test]
+		fn clamp_tests() {	
+			let result = clamp(0.0, 1.0, 5.0);
+			assert_eq!(result, 1.0);
+	
+			let result = clamp(2.0, 1.0, 5.0);
+			assert_eq!(result, 2.0);
+	
+			let result = clamp(6.0, 1.0, 5.0);
+			assert_eq!(result, 5.0);
+		}
+	
+		#[test]
+		fn cubic_curve_tests() {
+			let result = cubic_curve(0.0);
+			assert_eq!(result, 0.0);
+	
+			let result = cubic_curve(1.0);
+			assert_eq!(result, 1.0);
+	
+			let result = cubic_curve(1.5);
+			assert_eq!(result, 0.0);
+	
+			let result = cubic_curve(2.0);
+			assert_eq!(result, -4.0);
+		}
+	
+		#[test]
+		fn quintic_curve_tests() {
+			let result = quintic_curve(0.0);
+			assert_eq!(result, 0.0);
+	
+			let result = quintic_curve(1.0);
+			assert_eq!(result, 1.0);
+	
+			let result = quintic_curve(2.0);
+			assert_eq!(result, 32.0);
+		}
+	}
+	
+	mod f64 {
+		use crate::math::f64::*;
+		#[test]
+		fn lerp_tests() {
+			let result = lerp(0.0, 1.0, 0.4);
+			assert_eq!(result, 0.4);
+	
+			let result = lerp(0.0, 10.0, 0.4);
+			assert_eq!(result, 4.0);
+		}
+	
+		#[test]
+		fn clamp_tests() {	
+			let result = clamp(0.0, 1.0, 5.0);
+			assert_eq!(result, 1.0);
+	
+			let result = clamp(2.0, 1.0, 5.0);
+			assert_eq!(result, 2.0);
+	
+			let result = clamp(6.0, 1.0, 5.0);
+			assert_eq!(result, 5.0);
+		}
+	
+		#[test]
+		fn cubic_curve_tests() {
+			let result = cubic_curve(0.0);
+			assert_eq!(result, 0.0);
+	
+			let result = cubic_curve(1.0);
+			assert_eq!(result, 1.0);
+	
+			let result = cubic_curve(1.5);
+			assert_eq!(result, 0.0);
+	
+			let result = cubic_curve(2.0);
+			assert_eq!(result, -4.0);
+		}
+	
+		#[test]
+		fn quintic_curve_tests() {
+			let result = quintic_curve(0.0);
+			assert_eq!(result, 0.0);
+	
+			let result = quintic_curve(1.0);
+			assert_eq!(result, 1.0);
+	
+			let result = quintic_curve(2.0);
+			assert_eq!(result, 32.0);
+		}
+	}
 }

@@ -1,15 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    float::Float,
-    math::{cubic_curve, linear_curve, quintic_curve},
-    prelude::Perlin,
-    source::Blender,
-    task::{FractalBuilder, FractalType, TaskSource, TaskTree},
-};
-
-use super::{IntoTaskSource, TaskDependencies};
-
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, PartialOrd, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum FractalSource {
@@ -28,112 +18,177 @@ pub enum FractalBlender {
     Quintic,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, PartialOrd)]
-#[serde(default)]
-pub struct FractalConfig {
-    #[serde(alias = "amp")]
-    pub amplitude: f64,
-    #[serde(alias = "exp")]
-    pub exponent: Option<f64>,
-    pub fractal: FractalType,
-    #[serde(alias = "freq")]
-    pub frequency: f64,
-    pub gain: f64,
-    pub interp: FractalBlender,
-    pub lacunarity: f64,
-    pub octaves: u16,
-    pub offset: Option<f64>,
-    #[serde(alias = "src")]
-    pub source: FractalSource,
-}
+macro_rules! fractal_config {
+    ($type: ty) => {
+        use serde::{Deserialize, Serialize};
 
-impl Default for FractalConfig {
-    fn default() -> Self {
-        Self {
-            amplitude: 1.0,
-            exponent: None,
-            fractal: FractalType::default(),
-            frequency: 1.0,
-            gain: 0.5,
-            interp: FractalBlender::default(),
-            lacunarity: 2.0,
-            octaves: 6,
-            offset: None,
-            source: FractalSource::default(),
+        #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, PartialOrd)]
+        #[serde(default)]
+        pub struct FractalConfig {
+            #[serde(alias = "amp")]
+            pub amplitude: $type,
+            #[serde(alias = "exp")]
+            pub exponent: Option<$type>,
+            pub fractal: FractalType,
+            #[serde(alias = "freq")]
+            pub frequency: $type,
+            pub gain: $type,
+            pub interp: FractalBlender,
+            pub lacunarity: $type,
+            pub octaves: u16,
+            pub offset: Option<$type>,
+            #[serde(alias = "src")]
+            pub source: FractalSource,
         }
-    }
+
+        impl Default for FractalConfig {
+            fn default() -> Self {
+                Self {
+                    amplitude: 1.0,
+                    exponent: None,
+                    fractal: FractalType::default(),
+                    frequency: 1.0,
+                    gain: 0.5,
+                    interp: FractalBlender::default(),
+                    lacunarity: 2.0,
+                    octaves: 6,
+                    offset: None,
+                    source: FractalSource::default(),
+                }
+            }
+        }
+
+        impl TaskDependencies for FractalConfig {
+            fn dependencies(&self) -> Vec<String> {
+                vec![]
+            }
+        }
+
+        impl IntoTaskSource for FractalConfig {
+            fn config_into(&self, _: &TaskTree) -> TaskSource {
+                let mut builder = FractalBuilder::new();
+
+                let blender: Blender = match self.interp {
+                    FractalBlender::Cubic => math::cubic_curve,
+                    FractalBlender::Linear => math::linear_curve,
+                    FractalBlender::Quintic => math::quintic_curve,
+                };
+
+                builder
+                    .amplitude(self.amplitude)
+                    .fractal(self.fractal)
+                    .frequency(self.frequency)
+                    .gain(self.gain)
+                    .interp(blender)
+                    .lacunarity(self.lacunarity)
+                    .octaves(self.octaves)
+                    .source(match self.source {
+                        FractalSource::Perlin => Box::new(Perlin::new(blender)),
+                    });
+
+                builder.build().into()
+            }
+        }
+    };
 }
 
-impl TaskDependencies for FractalConfig {
-    fn dependencies(&self) -> Vec<String> {
-        vec![]
-    }
+pub mod f32 {
+    pub use super::{FractalBlender, FractalSource};
+    use crate::math::f32 as math;
+    use crate::ser::f32::{IntoTaskSource, TaskDependencies};
+    use crate::source::f32::{Blender, Perlin};
+    use crate::task::f32::{FractalBuilder, FractalType, TaskSource, TaskTree};
+    fractal_config!(f32);
 }
 
-impl<T: Float> IntoTaskSource<T> for FractalConfig {
-    fn config_into(&self, _: &TaskTree<T>) -> TaskSource<T> {
-        let mut builder = FractalBuilder::<T>::new();
-
-        let blender: Blender<T> = match self.interp {
-            FractalBlender::Cubic => cubic_curve::<T>,
-            FractalBlender::Linear => linear_curve::<T>,
-            FractalBlender::Quintic => quintic_curve::<T>,
-        };
-
-        builder
-            .amplitude(T::as_float(self.amplitude))
-            .fractal(self.fractal)
-            .frequency(T::as_float(self.frequency))
-            .gain(T::as_float(self.gain))
-            .interp(blender)
-            .lacunarity(T::as_float(self.lacunarity))
-            .octaves(self.octaves)
-            .source(match self.source {
-                FractalSource::Perlin => Box::new(Perlin::new(blender)),
-            });
-
-        builder.build().into()
-    }
+pub mod f64 {
+    pub use super::{FractalBlender, FractalSource};
+    use crate::math::f64 as math;
+    use crate::ser::f64::{IntoTaskSource, TaskDependencies};
+    use crate::source::f64::{Blender, Perlin};
+    use crate::task::f64::{FractalBuilder, FractalType, TaskSource, TaskTree};
+    fractal_config!(f64);
 }
 
 #[cfg(test)]
 mod test {
-    use std::collections::HashMap;
+    mod f32 {
+        use std::collections::HashMap;
 
-    use crate::ser::TaskConfig;
+        use crate::ser::f32::{FractalConfig, TaskConfig};
+        use crate::task::f32::FractalType;
 
-    use super::*;
+        #[test]
+        fn deserialize() {
+            let data = toml::to_string(&toml::toml! {
+                [fractal_a]
+                fractal = { octaves = 1, frequency = 0.5, fractal = "fbm" }
 
-    #[test]
-    fn deserialize() {
-        let data = toml::to_string(&toml::toml! {
-            [fractal_a]
-            fractal = { octaves = 1, frequency = 0.5, fractal = "fbm" }
-
-            [fractal_b]
-            fractal = { octaves = 2, freq = 0.9 }
-        })
-        .unwrap();
-        let config: HashMap<String, TaskConfig> = toml::from_str(data.as_str()).unwrap();
-
-        assert_eq!(config.len(), 2);
-        assert_eq!(
-            config["fractal_a"],
-            TaskConfig::Fractal(FractalConfig {
-                octaves: 1,
-                fractal: FractalType::Brownian,
-                frequency: 0.5,
-                ..Default::default()
+                [fractal_b]
+                fractal = { octaves = 2, freq = 0.9 }
             })
-        );
+            .unwrap();
+            let config: HashMap<String, TaskConfig> = toml::from_str(data.as_str()).unwrap();
 
-        assert_eq!(
-            config["fractal_b"],
-            TaskConfig::Fractal(FractalConfig {
-                octaves: 2,
-                frequency: 0.9,
-                ..Default::default()
+            assert_eq!(config.len(), 2);
+            assert_eq!(
+                config["fractal_a"],
+                TaskConfig::Fractal(FractalConfig {
+                    octaves: 1,
+                    fractal: FractalType::Brownian,
+                    frequency: 0.5,
+                    ..Default::default()
+                })
+            );
+
+            assert_eq!(
+                config["fractal_b"],
+                TaskConfig::Fractal(FractalConfig {
+                    octaves: 2,
+                    frequency: 0.9,
+                    ..Default::default()
+                })
+            );
+        }
+    }
+
+    mod f64 {
+        use std::collections::HashMap;
+
+        use crate::ser::f64::{FractalConfig, TaskConfig};
+        use crate::task::f64::FractalType;
+
+        #[test]
+        fn deserialize() {
+            let data = toml::to_string(&toml::toml! {
+                [fractal_a]
+                fractal = { octaves = 1, frequency = 0.5, fractal = "fbm" }
+
+                [fractal_b]
+                fractal = { octaves = 2, freq = 0.9 }
             })
-        );
+            .unwrap();
+            let config: HashMap<String, TaskConfig> = toml::from_str(data.as_str()).unwrap();
+
+            assert_eq!(config.len(), 2);
+            assert_eq!(
+                config["fractal_a"],
+                TaskConfig::Fractal(FractalConfig {
+                    octaves: 1,
+                    fractal: FractalType::Brownian,
+                    frequency: 0.5,
+                    ..Default::default()
+                })
+            );
+
+            assert_eq!(
+                config["fractal_b"],
+                TaskConfig::Fractal(FractalConfig {
+                    octaves: 2,
+                    frequency: 0.9,
+                    ..Default::default()
+                })
+            );
+        }
     }
 }

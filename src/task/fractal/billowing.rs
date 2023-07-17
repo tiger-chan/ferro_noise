@@ -1,58 +1,91 @@
 /// Billowing
-use super::NoiseConfig;
-use crate::{float::Float, source::Noise};
+pub(self) use super::{f32 as sf32, f64 as sf64};
 
-fn eval<T: Float, F: Fn(&mut dyn Noise<T>, T, u16) -> T>(
-    config: &NoiseConfig<T>,
-    noise: &mut dyn Noise<T>,
-    sampler: F,
-) -> T {
-    let mut result = T::ZERO;
-    let mut amp = config.amplitude;
-    let mut freq = config.frequency;
+macro_rules! eval_fn {
+    ($type: ty) => {
+        fn eval<F: Fn(&mut dyn Noise, $type, u16) -> $type>(
+            config: &NoiseConfig,
+            noise: &mut dyn Noise,
+            sampler: F,
+        ) -> $type {
+            let mut result = 0.0;
+            let mut amp = config.amplitude;
+            let mut freq = config.frequency;
 
-    let mut weight = T::ZERO;
+            let mut weight = 0.0;
 
-    for octave in 0..config.octaves {
-        let tmp = sampler(noise, freq, octave);
-        let tmp = T::TWO * tmp.abs() - T::ONE;
-        result += tmp * amp;
+            for octave in 0..config.octaves {
+                let tmp = sampler(noise, freq, octave);
+                let tmp = 2.0 * tmp.abs() - 1.0;
+                result += tmp * amp;
 
-        // used to normalize values generated.
-        weight += amp;
+                // used to normalize values generated.
+                weight += amp;
 
-        freq *= config.lacunarity;
-        amp *= config.gain;
-    }
-    result /= weight;
-    result += T::from(0.5);
+                freq *= config.lacunarity;
+                amp *= config.gain;
+            }
+            result /= weight;
+            result += 0.5;
 
-    result
+            result
+        }
+    };
 }
 
-pub fn sample_1d<T: Float>(config: &NoiseConfig<T>, noise: &mut dyn Noise<T>, x: T) -> T {
-    eval(config, noise, |s, f, o| {
-        let o: T = T::from(o);
-        (*s).sample_1d(x * f + o)
-    })
+macro_rules! sample_1d {
+    ($type: ty) => {
+        pub fn sample_1d(config: &NoiseConfig, noise: &mut dyn Noise, x: $type) -> $type {
+            eval(config, noise, |s, f, o| {
+                let o: $type = o as $type;
+                (*s).sample_1d(x * f + o)
+            })
+        }
+    };
 }
 
-pub fn sample_2d<T: Float>(config: &NoiseConfig<T>, noise: &mut dyn Noise<T>, x: T, y: T) -> T {
-    eval(config, noise, |s, f, o| {
-        let o: T = T::from(o);
-        (*s).sample_2d(x * f + o, y * f + o)
-    })
+macro_rules! sample_2d {
+    ($type: ty) => {
+        pub fn sample_2d(config: &NoiseConfig, noise: &mut dyn Noise, x: $type, y: $type) -> $type {
+            eval(config, noise, |s, f, o| {
+                let o: $type = o as $type;
+                (*s).sample_2d(x * f + o, y * f + o)
+            })
+        }
+    };
 }
 
-pub fn sample_3d<T: Float>(
-    config: &NoiseConfig<T>,
-    noise: &mut dyn Noise<T>,
-    x: T,
-    y: T,
-    z: T,
-) -> T {
-    eval(config, noise, |s, f, o| {
-        let o: T = T::from(o);
-        (*s).sample_3d(x * f + o, y * f + o, z * f + o)
-    })
+macro_rules! sample_3d {
+    ($type: ty) => {
+        pub fn sample_3d(
+            config: &NoiseConfig,
+            noise: &mut dyn Noise,
+            x: $type,
+            y: $type,
+            z: $type,
+        ) -> $type {
+            eval(config, noise, |s, f, o| {
+                let o: $type = o as $type;
+                (*s).sample_3d(x * f + o, y * f + o, z * f + o)
+            })
+        }
+    };
+}
+
+pub mod f32 {
+    use super::sf32::NoiseConfig;
+    use crate::source::f32::Noise;
+    eval_fn!(f32);
+    sample_1d!(f32);
+    sample_2d!(f32);
+    sample_3d!(f32);
+}
+
+pub mod f64 {
+    use super::sf64::NoiseConfig;
+    use crate::source::f64::Noise;
+    eval_fn!(f64);
+    sample_1d!(f64);
+    sample_2d!(f64);
+    sample_3d!(f64);
 }
