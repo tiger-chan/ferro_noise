@@ -7,4 +7,24 @@ mod noise;
 mod selector_config;
 mod transform_domain_config;
 
-pub use noise::*;
+pub mod f32 {
+    pub(crate) use super::aggregate_config::f32::*;
+    pub(crate) use super::bias_config::f32::*;
+    pub(crate) use super::fractal_config::f32::*;
+    pub(crate) use super::gradient_config::f32::*;
+    pub(crate) use super::name_or_const::f32::*;
+    pub use super::noise::f32::*;
+    pub(crate) use super::selector_config::f32::*;
+    pub(crate) use super::transform_domain_config::f32::*;
+}
+
+pub mod f64 {
+    pub(crate) use super::aggregate_config::f64::*;
+    pub(crate) use super::bias_config::f64::*;
+    pub(crate) use super::fractal_config::f64::*;
+    pub(crate) use super::gradient_config::f64::*;
+    pub(crate) use super::name_or_const::f64::*;
+    pub use super::noise::f64::*;
+    pub(crate) use super::selector_config::f64::*;
+    pub(crate) use super::transform_domain_config::f64::*;
+}

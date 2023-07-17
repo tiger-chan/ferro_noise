@@ -1,12 +1,3 @@
-use crate::float::Float;
-
-use super::TaskSource;
-
-pub(crate) enum NameOrSource<T: Float> {
-    Named(String),
-    Source(TaskSource<T>),
-}
-
 macro_rules! source_or_message {
     ($value:expr, $class:ty) => {
         match &$value {
@@ -35,3 +26,22 @@ macro_rules! named_to_task {
 
 pub(crate) use named_to_task;
 pub(crate) use source_or_message;
+
+macro_rules! name_or_source_type {
+	() => {
+		pub(crate) enum NameOrSource {
+			Named(String),
+			Source(TaskSource),
+		}
+	};
+}
+
+pub mod f32 {
+	use super::super::f32::TaskSource;
+	name_or_source_type!();
+}
+
+pub mod f64 {
+	use super::super::f64::TaskSource;
+	name_or_source_type!();
+}

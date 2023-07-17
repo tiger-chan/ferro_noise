@@ -1,105 +1,156 @@
-use super::{name_or_const::NameOrConst, IntoTaskSource, TaskDependencies};
-use crate::{
-    float::Float,
-    task::{AggregatorBuilder, Operation},
-};
-use serde::{Deserialize, Serialize};
+macro_rules! aggregate_config {
+    ($type: ty) => {
+        use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, PartialOrd)]
-#[serde(rename_all = "snake_case", default)]
-pub struct AggregateConfig {
-    pub operator: Operation,
-    pub initial: f64,
-    pub source: Vec<NameOrConst>,
-}
-
-impl Default for AggregateConfig {
-    fn default() -> Self {
-        Self {
-            operator: Operation::default(),
-            initial: 0.0,
-            source: vec![0.0.into()],
+        #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, PartialOrd)]
+        #[serde(rename_all = "snake_case", default)]
+        pub struct AggregateConfig {
+            pub operator: Operation,
+            pub initial: $type,
+            pub source: Vec<NameOrConst>,
         }
-    }
-}
 
-impl TaskDependencies for AggregateConfig {
-    fn dependencies(&self) -> Vec<String> {
-        self.source
-            .iter()
-            .filter(|x| x.is_named())
-            .map(|x| match x {
-                NameOrConst::Named(x) => x.clone(),
-                _ => String::new(),
-            })
-            .collect()
-    }
-}
-
-impl<T: Float> IntoTaskSource<T> for AggregateConfig {
-    fn config_into(&self, tree: &crate::task::TaskTree<T>) -> crate::task::TaskSource<T> {
-        let mut builder = AggregatorBuilder::<T>::new();
-
-        builder
-            .initial(T::as_float(self.initial))
-            .operation(self.operator);
-
-        for source in &self.source {
-            match source {
-                NameOrConst::Named(x) => {
-                    builder.add_named_task(x);
-                }
-                NameOrConst::Value(x) => {
-                    builder.add_task(T::as_float(*x));
+        impl Default for AggregateConfig {
+            fn default() -> Self {
+                Self {
+                    operator: Operation::default(),
+                    initial: 0.0,
+                    source: vec![0.0.into()],
                 }
             }
         }
 
-        builder.link(tree).build().into()
-    }
+        impl TaskDependencies for AggregateConfig {
+            fn dependencies(&self) -> Vec<String> {
+                self.source
+                    .iter()
+                    .filter(|x| x.is_named())
+                    .map(|x| match x {
+                        NameOrConst::Named(x) => x.clone(),
+                        _ => String::new(),
+                    })
+                    .collect()
+            }
+        }
+
+        impl IntoTaskSource for AggregateConfig {
+            fn config_into(&self, tree: &TaskTree) -> TaskSource {
+                let mut builder = AggregatorBuilder::new();
+
+                builder.initial(self.initial).operation(self.operator);
+
+                for source in &self.source {
+                    match source {
+                        NameOrConst::Named(x) => {
+                            builder.add_named_task(x);
+                        }
+                        NameOrConst::Value(x) => {
+                            builder.add_task(<$type>::from(*x));
+                        }
+                    }
+                }
+
+                builder.link(tree).build().into()
+            }
+        }
+    };
+}
+
+pub mod f32 {
+    use crate::ser::f32::{IntoTaskSource, NameOrConst, TaskDependencies};
+    use crate::task::f32::{AggregatorBuilder, Operation, TaskSource, TaskTree};
+    aggregate_config!(f32);
+}
+
+pub mod f64 {
+    use crate::ser::f64::{IntoTaskSource, NameOrConst, TaskDependencies};
+    use crate::task::f64::{AggregatorBuilder, Operation, TaskSource, TaskTree};
+    aggregate_config!(f64);
 }
 
 #[cfg(test)]
 mod test {
-    use std::collections::HashMap;
+    mod f32 {
+        use crate::ser::f32::{AggregateConfig, TaskConfig};
+        use crate::task::f32::Operation;
+        use std::collections::HashMap;
 
-    use crate::ser::TaskConfig;
+        #[test]
+        fn deserialize() {
+            let data = toml::to_string(&toml::toml! {
+                [aggregate_a]
+                aggregate.operator = "sub"
+                aggregate.initial = 1.0
+                aggregate.source = [1.0, "other"]
 
-    use super::*;
-
-    #[test]
-    fn deserialize() {
-        let data = toml::to_string(&toml::toml! {
-            [aggregate_a]
-            aggregate.operator = "sub"
-            aggregate.initial = 1.0
-            aggregate.source = [1.0, "other"]
-
-            [aggregate_b]
-            aggregate = { operator = "mul", source = [123] }
-        })
-        .unwrap();
-        let config: HashMap<String, TaskConfig> = toml::from_str(data.as_str()).unwrap();
-
-        assert_eq!(config.len(), 2);
-        assert_eq!(
-            config["aggregate_a"],
-            TaskConfig::Aggregate(AggregateConfig {
-                initial: 1.0,
-                operator: Operation::Sub,
-                source: vec![1.0.into(), "other".to_owned().into()],
-                ..Default::default()
+                [aggregate_b]
+                aggregate = { operator = "mul", source = [123] }
             })
-        );
+            .unwrap();
+            let config: HashMap<String, TaskConfig> = toml::from_str(data.as_str()).unwrap();
 
-        assert_eq!(
-            config["aggregate_b"],
-            TaskConfig::Aggregate(AggregateConfig {
-                initial: 0.0,
-                operator: Operation::Mul,
-                source: vec![123.0.into(),],
-                ..Default::default()
+            assert_eq!(config.len(), 2);
+            assert_eq!(
+                config["aggregate_a"],
+                TaskConfig::Aggregate(AggregateConfig {
+                    initial: 1.0,
+                    operator: Operation::Sub,
+                    source: vec![1.0.into(), "other".to_owned().into()],
+                    ..Default::default()
+                })
+            );
+
+            assert_eq!(
+                config["aggregate_b"],
+                TaskConfig::Aggregate(AggregateConfig {
+                    initial: 0.0,
+                    operator: Operation::Mul,
+                    source: vec![123.0.into(),],
+                    ..Default::default()
+                })
+            );
+        }
+    }
+
+    mod f64 {
+        use crate::ser::f64::{AggregateConfig, TaskConfig};
+        use crate::task::f64::Operation;
+        use std::collections::HashMap;
+
+        #[test]
+        fn deserialize() {
+            let data = toml::to_string(&toml::toml! {
+                [aggregate_a]
+                aggregate.operator = "sub"
+                aggregate.initial = 1.0
+                aggregate.source = [1.0, "other"]
+
+                [aggregate_b]
+                aggregate = { operator = "mul", source = [123] }
             })
-        );
+            .unwrap();
+            let config: HashMap<String, TaskConfig> = toml::from_str(data.as_str()).unwrap();
+
+            assert_eq!(config.len(), 2);
+            assert_eq!(
+                config["aggregate_a"],
+                TaskConfig::Aggregate(AggregateConfig {
+                    initial: 1.0,
+                    operator: Operation::Sub,
+                    source: vec![1.0.into(), "other".to_owned().into()],
+                    ..Default::default()
+                })
+            );
+
+            assert_eq!(
+                config["aggregate_b"],
+                TaskConfig::Aggregate(AggregateConfig {
+                    initial: 0.0,
+                    operator: Operation::Mul,
+                    source: vec![123.0.into(),],
+                    ..Default::default()
+                })
+            );
+        }
     }
 }
