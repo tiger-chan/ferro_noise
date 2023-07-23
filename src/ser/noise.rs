@@ -24,6 +24,7 @@ macro_rules! task_config {
             Constant($type),
             Fractal(FractalConfig),
             Gradient(GradientConfig),
+            Scale(ScaleConfig),
             Selector(SelectorConfig),
             TransformDomain(TransformDomainConfig),
         }
@@ -43,6 +44,7 @@ macro_rules! task_config {
                     Self::Constant(_) => vec![],
                     Self::Fractal(x) => x.dependencies(),
                     Self::Gradient(x) => x.dependencies(),
+                    Self::Scale(x) => x.dependencies(),
                     Self::Selector(x) => x.dependencies(),
                     Self::TransformDomain(x) => x.dependencies(),
                 }
@@ -62,6 +64,7 @@ macro_rules! task_config {
                     TaskConfig::Constant(x) => TaskSource::from(*x),
                     TaskConfig::Fractal(x) => x.config_into(tree),
                     TaskConfig::Gradient(x) => x.config_into(tree),
+                    TaskConfig::Scale(x) => x.config_into(tree),
                     TaskConfig::Selector(x) => x.config_into(tree),
                     TaskConfig::TransformDomain(x) => x.config_into(tree),
                 }
@@ -182,7 +185,7 @@ macro_rules! from_str {
 pub mod f32 {
     pub(crate) use super::TaskDependencies;
     use crate::ser::f32::{
-        AggregateConfig, BiasConfig, FractalConfig, GradientConfig, SelectorConfig,
+        AggregateConfig, BiasConfig, FractalConfig, GradientConfig, ScaleConfig, SelectorConfig,
         TransformDomainConfig,
     };
     use crate::task::f32::{CacheBuilder, TaskSource, TaskTree};
@@ -202,7 +205,7 @@ pub mod f32 {
 pub mod f64 {
     pub(crate) use super::TaskDependencies;
     use crate::ser::f64::{
-        AggregateConfig, BiasConfig, FractalConfig, GradientConfig, SelectorConfig,
+        AggregateConfig, BiasConfig, FractalConfig, GradientConfig, ScaleConfig, SelectorConfig,
         TransformDomainConfig,
     };
     use crate::task::f64::{CacheBuilder, TaskSource, TaskTree};
