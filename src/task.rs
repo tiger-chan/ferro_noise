@@ -3,6 +3,8 @@ mod bias;
 mod cache;
 mod fractal;
 mod gradient;
+mod scale;
+mod scale_offset;
 mod selector;
 mod task;
 mod task_tree;
@@ -32,6 +34,8 @@ pub mod f32 {
     pub use super::cache::f32::*;
     pub use super::fractal::f32::*;
     pub use super::gradient::f32::*;
+    pub use super::scale::f32::*;
+    pub use super::scale_offset::f32::*;
     pub use super::selector::f32::*;
     pub use super::task::f32::*;
     pub use super::task_tree::f32::*;
@@ -45,6 +49,8 @@ pub mod f64 {
     pub use super::cache::f64::*;
     pub use super::fractal::f64::*;
     pub use super::gradient::f64::*;
+    pub use super::scale::f64::*;
+    pub use super::scale_offset::f64::*;
     pub use super::selector::f64::*;
     pub use super::task::f64::*;
     pub use super::task_tree::f64::*;

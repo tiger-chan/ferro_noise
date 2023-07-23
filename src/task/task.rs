@@ -12,6 +12,8 @@ macro_rules! task_source {
             Constant($type),
             Fractal(Rc<RefCell<Fractal>>),
             Gradient(Rc<RefCell<Gradient>>),
+            Scale(Rc<RefCell<Scale>>),
+            ScaleOffset(Rc<RefCell<ScaleOffset>>),
             Selector(Rc<RefCell<Selector>>),
             Domain(Rc<RefCell<TransformDomain>>),
         }
@@ -52,6 +54,18 @@ macro_rules! task_source {
             }
         }
 
+        impl From<Scale> for TaskSource {
+            fn from(value: Scale) -> Self {
+                Self::Scale(Rc::new(RefCell::new(value)))
+            }
+        }
+
+        impl From<ScaleOffset> for TaskSource {
+            fn from(value: ScaleOffset) -> Self {
+                Self::ScaleOffset(Rc::new(RefCell::new(value)))
+            }
+        }
+
         impl From<Selector> for TaskSource {
             fn from(value: Selector) -> Self {
                 Self::Selector(Rc::new(RefCell::new(value)))
@@ -73,6 +87,8 @@ macro_rules! task_source {
                     Self::Constant(v) => v.clone(),
                     Self::Fractal(t) => t.borrow_mut().sample_1d(x),
                     Self::Gradient(t) => t.borrow_mut().sample_1d(x),
+                    Self::Scale(t) => t.borrow_mut().sample_1d(x),
+                    Self::ScaleOffset(t) => t.borrow_mut().sample_1d(x),
                     Self::Selector(t) => t.borrow_mut().sample_1d(x),
                     Self::Domain(t) => t.borrow_mut().sample_1d(x),
                 }
@@ -86,6 +102,8 @@ macro_rules! task_source {
                     Self::Constant(v) => v.clone(),
                     Self::Fractal(t) => t.borrow_mut().sample_2d(x, y),
                     Self::Gradient(t) => t.borrow_mut().sample_2d(x, y),
+                    Self::Scale(t) => t.borrow_mut().sample_2d(x, y),
+                    Self::ScaleOffset(t) => t.borrow_mut().sample_2d(x, y),
                     Self::Selector(t) => t.borrow_mut().sample_2d(x, y),
                     Self::Domain(t) => t.borrow_mut().sample_2d(x, y),
                 }
@@ -99,6 +117,8 @@ macro_rules! task_source {
                     Self::Constant(v) => v.clone(),
                     Self::Fractal(t) => t.borrow_mut().sample_3d(x, y, z),
                     Self::Gradient(t) => t.borrow_mut().sample_3d(x, y, z),
+                    Self::Scale(t) => t.borrow_mut().sample_3d(x, y, z),
+                    Self::ScaleOffset(t) => t.borrow_mut().sample_3d(x, y, z),
                     Self::Selector(t) => t.borrow_mut().sample_3d(x, y, z),
                     Self::Domain(t) => t.borrow_mut().sample_3d(x, y, z),
                 }
@@ -110,7 +130,8 @@ macro_rules! task_source {
 pub mod f32 {
     pub(crate) use super::named_or_source::f32::NameOrSource;
     use crate::task::f32::{
-        Aggregator, Bias, Cache, Fractal, Gradient, Selector, Task, TransformDomain,
+        Aggregator, Bias, Cache, Fractal, Gradient, Scale, ScaleOffset, Selector, Task,
+        TransformDomain,
     };
     use std::{cell::RefCell, rc::Rc};
     task_source!(f32);
@@ -119,7 +140,8 @@ pub mod f32 {
 pub mod f64 {
     pub(crate) use super::named_or_source::f64::NameOrSource;
     use crate::task::f64::{
-        Aggregator, Bias, Cache, Fractal, Gradient, Selector, Task, TransformDomain,
+        Aggregator, Bias, Cache, Fractal, Gradient, Scale, ScaleOffset, Selector, Task,
+        TransformDomain,
     };
     use std::{cell::RefCell, rc::Rc};
     task_source!(f64);
@@ -163,8 +185,8 @@ mod tests {
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
         }
     }
-    
-	mod f64 {
+
+    mod f64 {
         use crate::task::f64::{CacheBuilder, Task, TaskSource};
 
         #[test]
