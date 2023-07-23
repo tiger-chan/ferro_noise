@@ -87,6 +87,7 @@ mod test {
                 TaskConfig::ScaleOffset(ScaleOffsetConfig {
                     source: "other".to_owned().into(),
                     scale: 1.0.into(),
+                    offset: 2.0.into(),
                     ..Default::default()
                 })
             );
@@ -127,6 +128,7 @@ mod test {
                 TaskConfig::ScaleOffset(ScaleOffsetConfig {
                     source: "other".to_owned().into(),
                     scale: 1.0.into(),
+                    offset: 2.0.into(),
                     ..Default::default()
                 })
             );
