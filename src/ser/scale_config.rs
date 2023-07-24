@@ -7,6 +7,7 @@ macro_rules! scale_config {
         pub struct ScaleConfig {
             pub scale: NameOrConst,
             pub source: NameOrConst,
+            pub cached: bool,
         }
 
         impl Default for ScaleConfig {
@@ -14,6 +15,7 @@ macro_rules! scale_config {
                 Self {
                     scale: 1.0.into(),
                     source: 0.0.into(),
+                    cached: false,
                 }
             }
         }
@@ -69,6 +71,7 @@ mod test {
                 [scale_a]
                 scale.source = "other"
                 scale.scale = 1.0
+                scale.cached = true
 
                 [scale_b]
                 scale = { scale = "other", source = 1 }
@@ -82,6 +85,7 @@ mod test {
                 TaskConfig::Scale(ScaleConfig {
                     source: "other".to_owned().into(),
                     scale: 1.0.into(),
+                    cached: true,
                     ..Default::default()
                 })
             );
@@ -108,6 +112,7 @@ mod test {
                 [scale_a]
                 scale.source = "other"
                 scale.scale = 1.0
+                scale.cached = true
 
                 [scale_b]
                 scale = { scale = "other", source = 1 }
@@ -121,6 +126,7 @@ mod test {
                 TaskConfig::Scale(ScaleConfig {
                     source: "other".to_owned().into(),
                     scale: 1.0.into(),
+                    cached: true,
                     ..Default::default()
                 })
             );

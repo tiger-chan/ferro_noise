@@ -8,6 +8,7 @@ macro_rules! scale_offset_config {
             pub offset: NameOrConst,
             pub scale: NameOrConst,
             pub source: NameOrConst,
+            pub cached: bool,
         }
 
         impl Default for ScaleOffsetConfig {
@@ -16,6 +17,7 @@ macro_rules! scale_offset_config {
                     offset: 0.0.into(),
                     scale: 1.0.into(),
                     source: 0.0.into(),
+                    cached: false,
                 }
             }
         }
@@ -74,6 +76,7 @@ mod test {
                 scale_offset.source = "other"
                 scale_offset.offset = 2.0
                 scale_offset.scale = 1.0
+                scale_offset.cached = true
 
                 [scale_offset_b]
                 scale_offset = { scale = "other", source = 1 }
@@ -88,6 +91,7 @@ mod test {
                     source: "other".to_owned().into(),
                     scale: 1.0.into(),
                     offset: 2.0.into(),
+                    cached: true,
                     ..Default::default()
                 })
             );
@@ -115,6 +119,7 @@ mod test {
                 scale_offset.source = "other"
                 scale_offset.offset = 2.0
                 scale_offset.scale = 1.0
+                scale_offset.cached = true
 
                 [scale_offset_b]
                 scale_offset = { scale = "other", source = 1 }
@@ -129,6 +134,7 @@ mod test {
                     source: "other".to_owned().into(),
                     scale: 1.0.into(),
                     offset: 2.0.into(),
+                    cached: true,
                     ..Default::default()
                 })
             );

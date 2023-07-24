@@ -10,6 +10,7 @@ macro_rules! transform_domain_config {
             pub dy: NameOrConst,
             pub dz: NameOrConst,
             pub source: NameOrConst,
+            pub cached: bool,
         }
 
         impl Default for TransformDomainConfig {
@@ -20,6 +21,7 @@ macro_rules! transform_domain_config {
                     dy: 0.0.into(),
                     dz: 0.0.into(),
                     source: 1.0.into(),
+                    cached: false,
                 }
             }
         }
@@ -80,6 +82,7 @@ mod test {
                 transform_domain.dx = "dx"
                 transform_domain.dy = -1
                 transform_domain.source = 2.0
+                transform_domain.cached = true
 
                 [transform_domain_b]
                 transform_domain = { dx = "dx" }
@@ -94,6 +97,7 @@ mod test {
                     dx: "dx".to_owned().into(),
                     dy: (-1.0).into(),
                     source: 2.0.into(),
+                    cached: true,
                     ..Default::default()
                 })
             );

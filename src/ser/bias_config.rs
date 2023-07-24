@@ -9,6 +9,7 @@ macro_rules! bias_config {
             pub source: NameOrConst,
             pub min: $type,
             pub max: $type,
+            pub cached: bool,
         }
 
         impl Default for BiasConfig {
@@ -18,6 +19,7 @@ macro_rules! bias_config {
                     source: 0.0.into(),
                     min: 1.0,
                     max: 4.0,
+                    cached: false,
                 }
             }
         }
@@ -88,6 +90,7 @@ mod test {
                 bias.max = 5.0
                 bias.source = "other"
                 bias.bias = 1.0
+                bias.cached = true
 
                 [bias_b]
                 bias = { bias = "other", source = 1 }
@@ -103,6 +106,52 @@ mod test {
                     max: 5.0,
                     source: "other".to_owned().into(),
                     bias: 1.0.into(),
+                    cached: true,
+                    ..Default::default()
+                })
+            );
+
+            assert_eq!(
+                config["bias_b"],
+                TaskConfig::Bias(BiasConfig {
+                    source: 1.0.into(),
+                    bias: "other".to_owned().into(),
+                    ..Default::default()
+                })
+            );
+        }
+    }
+
+    mod f64 {
+        use std::collections::HashMap;
+
+        use crate::ser::f64::{BiasConfig, TaskConfig};
+
+        #[test]
+        fn deserialize() {
+            let data = toml::to_string(&toml::toml! {
+                [bias_a]
+                bias.min = 2
+                bias.max = 5.0
+                bias.source = "other"
+                bias.bias = 1.0
+                bias.cached = true
+
+                [bias_b]
+                bias = { bias = "other", source = 1 }
+            })
+            .unwrap();
+            let config: HashMap<String, TaskConfig> = toml::from_str(data.as_str()).unwrap();
+
+            assert_eq!(config.len(), 2);
+            assert_eq!(
+                config["bias_a"],
+                TaskConfig::Bias(BiasConfig {
+                    min: 2.0,
+                    max: 5.0,
+                    source: "other".to_owned().into(),
+                    bias: 1.0.into(),
+                    cached: true,
                     ..Default::default()
                 })
             );

@@ -8,6 +8,7 @@ macro_rules! aggregate_config {
             pub operator: Operation,
             pub initial: $type,
             pub source: Vec<NameOrConst>,
+            pub cached: bool,
         }
 
         impl Default for AggregateConfig {
@@ -16,6 +17,7 @@ macro_rules! aggregate_config {
                     operator: Operation::default(),
                     initial: 0.0,
                     source: vec![0.0.into()],
+                    cached: false,
                 }
             }
         }
@@ -82,6 +84,7 @@ mod test {
                 aggregate.operator = "sub"
                 aggregate.initial = 1.0
                 aggregate.source = [1.0, "other"]
+                aggregate.cached = true
 
                 [aggregate_b]
                 aggregate = { operator = "mul", source = [123] }
@@ -96,6 +99,7 @@ mod test {
                     initial: 1.0,
                     operator: Operation::Sub,
                     source: vec![1.0.into(), "other".to_owned().into()],
+                    cached: true,
                     ..Default::default()
                 })
             );
@@ -124,6 +128,7 @@ mod test {
                 aggregate.operator = "sub"
                 aggregate.initial = 1.0
                 aggregate.source = [1.0, "other"]
+                aggregate.cached = true
 
                 [aggregate_b]
                 aggregate = { operator = "mul", source = [123] }
@@ -138,6 +143,7 @@ mod test {
                     initial: 1.0,
                     operator: Operation::Sub,
                     source: vec![1.0.into(), "other".to_owned().into()],
+                    cached: true,
                     ..Default::default()
                 })
             );

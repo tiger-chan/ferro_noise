@@ -39,6 +39,7 @@ macro_rules! fractal_config {
             pub offset: Option<$type>,
             #[serde(alias = "src")]
             pub source: FractalSource,
+            pub cached: bool,
         }
 
         impl Default for FractalConfig {
@@ -54,6 +55,7 @@ macro_rules! fractal_config {
                     octaves: 6,
                     offset: None,
                     source: FractalSource::default(),
+                    cached: false,
                 }
             }
         }
@@ -122,7 +124,7 @@ mod test {
         fn deserialize() {
             let data = toml::to_string(&toml::toml! {
                 [fractal_a]
-                fractal = { octaves = 1, frequency = 0.5, fractal = "fbm" }
+                fractal = { octaves = 1, frequency = 0.5, fractal = "fbm", cached = true }
 
                 [fractal_b]
                 fractal = { octaves = 2, freq = 0.9 }
@@ -137,6 +139,7 @@ mod test {
                     octaves: 1,
                     fractal: FractalType::Brownian,
                     frequency: 0.5,
+                    cached: true,
                     ..Default::default()
                 })
             );
@@ -162,7 +165,7 @@ mod test {
         fn deserialize() {
             let data = toml::to_string(&toml::toml! {
                 [fractal_a]
-                fractal = { octaves = 1, frequency = 0.5, fractal = "fbm" }
+                fractal = { octaves = 1, frequency = 0.5, fractal = "fbm", cached = true }
 
                 [fractal_b]
                 fractal = { octaves = 2, freq = 0.9 }
@@ -177,6 +180,7 @@ mod test {
                     octaves: 1,
                     fractal: FractalType::Brownian,
                     frequency: 0.5,
+                    cached: true,
                     ..Default::default()
                 })
             );
