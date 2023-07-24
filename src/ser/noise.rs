@@ -20,7 +20,6 @@ macro_rules! task_config {
         pub(crate) enum TaskConfig {
             Aggregate(AggregateConfig),
             Bias(BiasConfig),
-            Cache(String),
             Constant($type),
             Fractal(FractalConfig),
             Gradient(GradientConfig),
@@ -41,7 +40,6 @@ macro_rules! task_config {
                 match &self {
                     Self::Aggregate(x) => x.dependencies(),
                     Self::Bias(x) => x.dependencies(),
-                    Self::Cache(x) => vec![x.clone()],
                     Self::Constant(_) => vec![],
                     Self::Fractal(x) => x.dependencies(),
                     Self::Gradient(x) => x.dependencies(),
@@ -58,11 +56,6 @@ macro_rules! task_config {
                 match &self {
                     TaskConfig::Aggregate(x) => x.config_into(tree),
                     TaskConfig::Bias(x) => x.config_into(tree),
-                    TaskConfig::Cache(x) => CacheBuilder::new()
-                        .named_source(x)
-                        .link(tree)
-                        .build()
-                        .into(),
                     TaskConfig::Constant(x) => TaskSource::from(*x),
                     TaskConfig::Fractal(x) => x.config_into(tree),
                     TaskConfig::Gradient(x) => x.config_into(tree),
@@ -79,7 +72,6 @@ macro_rules! task_config {
                 match &self {
                     Self::Aggregate(x) => x.cached,
                     Self::Bias(x) => x.cached,
-                    Self::Cache(_) => false,
                     Self::Constant(_) => false,
                     Self::Fractal(x) => x.cached,
                     Self::Gradient(x) => x.cached,
@@ -297,8 +289,8 @@ pub mod toml {
                     [const_a]
                     constant = 1.0
 
-                    [cache_b]
-                    cache = "fractal_a"
+                    [scale_a]
+                    scale = { scale = 1.0, source = "fractal_a"}
 
                     [fractal_a]
                     fractal = { octaves = 1, frequency = 0.5, source = "perlin" }
@@ -310,11 +302,11 @@ pub mod toml {
                     vec![
                         "const_a".to_owned(),
                         "fractal_a".to_owned(),
-                        "cache_b".to_owned(),
+                        "scale_a".to_owned(),
                     ],
                     vec![
                         "fractal_a".to_owned(),
-                        "cache_b".to_owned(),
+                        "scale_a".to_owned(),
                         "const_a".to_owned(),
                     ],
                 ];
