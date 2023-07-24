@@ -20,7 +20,6 @@ macro_rules! task_config {
         pub(crate) enum TaskConfig {
             Aggregate(AggregateConfig),
             Bias(BiasConfig),
-            Cache(String),
             Constant($type),
             Fractal(FractalConfig),
             Gradient(GradientConfig),
@@ -41,7 +40,6 @@ macro_rules! task_config {
                 match &self {
                     Self::Aggregate(x) => x.dependencies(),
                     Self::Bias(x) => x.dependencies(),
-                    Self::Cache(x) => vec![x.clone()],
                     Self::Constant(_) => vec![],
                     Self::Fractal(x) => x.dependencies(),
                     Self::Gradient(x) => x.dependencies(),
@@ -58,11 +56,6 @@ macro_rules! task_config {
                 match &self {
                     TaskConfig::Aggregate(x) => x.config_into(tree),
                     TaskConfig::Bias(x) => x.config_into(tree),
-                    TaskConfig::Cache(x) => CacheBuilder::new()
-                        .named_source(x)
-                        .link(tree)
-                        .build()
-                        .into(),
                     TaskConfig::Constant(x) => TaskSource::from(*x),
                     TaskConfig::Fractal(x) => x.config_into(tree),
                     TaskConfig::Gradient(x) => x.config_into(tree),
@@ -70,6 +63,22 @@ macro_rules! task_config {
                     TaskConfig::ScaleOffset(x) => x.config_into(tree),
                     TaskConfig::Selector(x) => x.config_into(tree),
                     TaskConfig::TransformDomain(x) => x.config_into(tree),
+                }
+            }
+        }
+
+        impl TaskConfig {
+            fn cached(&self) -> bool {
+                match &self {
+                    Self::Aggregate(x) => x.cached,
+                    Self::Bias(x) => x.cached,
+                    Self::Constant(_) => false,
+                    Self::Fractal(x) => x.cached,
+                    Self::Gradient(x) => x.cached,
+                    Self::Scale(x) => x.cached,
+                    Self::ScaleOffset(x) => x.cached,
+                    Self::Selector(x) => x.cached,
+                    Self::TransformDomain(x) => x.cached,
                 }
             }
         }
@@ -172,9 +181,21 @@ macro_rules! from_str {
                     let mut tree = Box::new(TaskTree::new());
 
                     for task_name in sorted_tasks {
-                        let config: &TaskConfig = result.entry(task_name.clone()).or_default();
+                        let mut name = task_name.clone();
+                        let config: &TaskConfig = result.entry(name.clone()).or_default();
+
+                        if config.cached() {
+                            name = format!("{}_cached", name);
+                        }
                         let task: TaskSource = config.config_into(tree.as_ref());
-                        tree.add_task(&task_name, task);
+                        tree.add_task(&name, task);
+
+                        if config.cached() {
+                            tree.add_task(
+                                &task_name,
+                                CacheBuilder::new().named_source(name).link(&tree).build(),
+                            );
+                        }
                     }
 
                     Ok(tree)
@@ -198,7 +219,7 @@ pub mod f32 {
 
     #[cfg(feature = "toml")]
     pub mod toml {
-        use super::{sort_tasks, IntoTaskSource, TaskConfig};
+        use super::{sort_tasks, CacheBuilder, IntoTaskSource, TaskConfig};
         use crate::task::f32::{TaskSource, TaskTree};
         use std::collections::HashMap;
         from_str!();
@@ -218,7 +239,7 @@ pub mod f64 {
 
     #[cfg(feature = "toml")]
     pub mod toml {
-        use super::{sort_tasks, IntoTaskSource, TaskConfig};
+        use super::{sort_tasks, CacheBuilder, IntoTaskSource, TaskConfig};
         use crate::task::f64::{TaskSource, TaskTree};
         use std::collections::HashMap;
         from_str!();
@@ -242,24 +263,21 @@ pub mod toml {
                     [const_a]
                     constant = 1.0
 
-                    [cache_b]
-                    cache = "fractal_a"
-
                     [fractal_a]
-                    fractal = { octaves = 1, frequency = 0.5, source = "perlin" }
+                    fractal = { octaves = 1, frequency = 0.5, source = "perlin", cached = true }
                 })
                 .unwrap();
                 let config: HashMap<String, TaskConfig> = ::toml::from_str(data.as_str()).unwrap();
 
-                assert_eq!(config.len(), 3);
+                assert_eq!(config.len(), 2);
                 assert_eq!(config["const_a"], TaskConfig::Constant(1.0));
-                assert_eq!(config["cache_b"], TaskConfig::Cache("fractal_a".to_owned()));
                 assert_eq!(
                     config["fractal_a"],
                     TaskConfig::Fractal(FractalConfig {
                         octaves: 1,
                         frequency: 0.5,
                         source: FractalSource::Perlin,
+                        cached: true,
                         ..Default::default()
                     })
                 );
@@ -271,8 +289,8 @@ pub mod toml {
                     [const_a]
                     constant = 1.0
 
-                    [cache_b]
-                    cache = "fractal_a"
+                    [scale_a]
+                    scale = { scale = 1.0, source = "fractal_a"}
 
                     [fractal_a]
                     fractal = { octaves = 1, frequency = 0.5, source = "perlin" }
@@ -284,11 +302,11 @@ pub mod toml {
                     vec![
                         "const_a".to_owned(),
                         "fractal_a".to_owned(),
-                        "cache_b".to_owned(),
+                        "scale_a".to_owned(),
                     ],
                     vec![
                         "fractal_a".to_owned(),
-                        "cache_b".to_owned(),
+                        "scale_a".to_owned(),
                         "const_a".to_owned(),
                     ],
                 ];
@@ -306,17 +324,14 @@ pub mod toml {
 				[const_a]
 				constant = 1.0
 	
-				[cache_b]
-				cache = "fractal_a"
-	
 				[fractal_a]
-				fractal = { octaves = 1, frequency = 0.5, source = "perlin" }
+				fractal = { octaves = 1, frequency = 0.5, source = "perlin", cached = true }
 			"#;
                 match from_str(data) {
                     Ok(mut x) => {
                         assert!(x.get("const_a").is_some());
-                        assert!(x.get("cache_b").is_some());
                         assert!(x.get("fractal_a").is_some());
+                        assert!(x.get("fractal_a_cached").is_some());
 
                         assert_eq!(x.sample_1d("const_a", 1.0), 1.0);
                     }

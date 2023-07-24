@@ -14,6 +14,7 @@ macro_rules! selector_config {
             pub falloff: NameOrConst,
             /// threadhold/pivot/boundry to determine when lower or upper is used
             pub threshold: NameOrConst,
+            pub cached: bool,
         }
 
         impl Default for SelectorConfig {
@@ -25,6 +26,7 @@ macro_rules! selector_config {
                     upper: 1.0.into(),
                     falloff: 0.0.into(),
                     threshold: 0.0.into(),
+                    cached: false,
                 }
             }
         }
@@ -101,6 +103,7 @@ mod test {
                 selector.interp = "linear"
                 selector.condition = -1
                 selector.upper = 2.0
+                selector.cached = true
 
                 [selector_b]
                 selector = { falloff = "other", threshold = 1, condition = "con" }
@@ -115,6 +118,50 @@ mod test {
                     interp: FractalBlender::Linear,
                     condition: (-1.0).into(),
                     upper: 2.0.into(),
+                    cached: true,
+                    ..Default::default()
+                })
+            );
+
+            assert_eq!(
+                config["selector_b"],
+                TaskConfig::Selector(SelectorConfig {
+                    falloff: "other".to_owned().into(),
+                    threshold: 1.0.to_owned().into(),
+                    condition: "con".to_owned().into(),
+                    ..Default::default()
+                })
+            );
+        }
+    }
+
+    mod f64 {
+        use crate::ser::f64::{FractalBlender, SelectorConfig, TaskConfig};
+        use std::collections::HashMap;
+
+        #[test]
+        fn deserialize() {
+            let data = toml::to_string(&toml::toml! {
+                [selector_a]
+                selector.interp = "linear"
+                selector.condition = -1
+                selector.upper = 2.0
+                selector.cached = true
+
+                [selector_b]
+                selector = { falloff = "other", threshold = 1, condition = "con" }
+            })
+            .unwrap();
+            let config: HashMap<String, TaskConfig> = toml::from_str(data.as_str()).unwrap();
+
+            assert_eq!(config.len(), 2);
+            assert_eq!(
+                config["selector_a"],
+                TaskConfig::Selector(SelectorConfig {
+                    interp: FractalBlender::Linear,
+                    condition: (-1.0).into(),
+                    upper: 2.0.into(),
+                    cached: true,
                     ..Default::default()
                 })
             );

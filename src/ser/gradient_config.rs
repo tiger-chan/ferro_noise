@@ -11,6 +11,7 @@ macro_rules! gradient_config {
             pub x2: $type,
             pub y2: $type,
             pub z2: $type,
+            pub cached: bool,
         }
 
         impl Default for GradientConfig {
@@ -22,6 +23,7 @@ macro_rules! gradient_config {
                     x2: 1.0,
                     y2: 1.0,
                     z2: 0.0,
+                    cached: false,
                 }
             }
         }
@@ -74,6 +76,7 @@ mod test {
                 gradient.x2 = 4
                 gradient.y2 = 5
                 gradient.z2 = 6
+                gradient.cached = true
 
                 [gradient_b]
                 gradient = { x1 = 2, y1 = 2, x2 = 4, y2 = 4 }
@@ -91,6 +94,7 @@ mod test {
                     y2: 5.0,
                     z1: 3.0,
                     z2: 6.0,
+                    cached: true,
                     ..Default::default()
                 })
             );
@@ -122,6 +126,7 @@ mod test {
                 gradient.x2 = 4
                 gradient.y2 = 5
                 gradient.z2 = 6
+                gradient.cached = true
 
                 [gradient_b]
                 gradient = { x1 = 2, y1 = 2, x2 = 4, y2 = 4 }
@@ -139,6 +144,7 @@ mod test {
                     y2: 5.0,
                     z1: 3.0,
                     z2: 6.0,
+                    cached: true,
                     ..Default::default()
                 })
             );
