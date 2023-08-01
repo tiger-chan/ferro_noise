@@ -1,6 +1,7 @@
 mod algorithm;
 mod easing;
 
+pub use algorithm::FloorDiv;
 pub use easing::*;
 
 pub mod f32 {
@@ -10,5 +11,5 @@ pub mod f32 {
 
 pub mod f64 {
     pub use super::algorithm::f64::*;
-	pub use super::easing::f64::*;
+    pub use super::easing::f64::*;
 }

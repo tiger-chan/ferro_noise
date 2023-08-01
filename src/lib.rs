@@ -1,4 +1,5 @@
 pub mod math;
+pub mod rng;
 #[cfg(feature = "serde")]
 pub mod ser;
 pub mod source;
