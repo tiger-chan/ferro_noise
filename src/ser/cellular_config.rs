@@ -9,6 +9,7 @@ macro_rules! gradient_config {
             pub y: $T,
             pub z: $T,
             pub seed: u64,
+            pub distance: Distance,
             pub cached: bool,
         }
 
@@ -19,6 +20,7 @@ macro_rules! gradient_config {
                     y: 1.0,
                     z: 1.0,
                     seed: 0,
+                    distance: Distance::Euclidean,
                     cached: false,
                 }
             }
@@ -34,7 +36,10 @@ macro_rules! gradient_config {
             fn config_into(&self, _: &TaskTree) -> TaskSource {
                 let mut builder = CellularBuilder::new();
 
-                builder.seed(self.seed).spacing([self.x, self.y, self.z]);
+                builder
+                    .seed(self.seed)
+                    .spacing([self.x, self.y, self.z])
+                    .distance(self.distance);
 
                 builder.build().into()
             }
@@ -44,12 +49,14 @@ macro_rules! gradient_config {
 
 pub mod f32 {
     use crate::ser::f32::{IntoTaskSource, TaskDependencies};
+    use crate::source::f32::Distance;
     use crate::task::f32::{CellularBuilder, TaskSource, TaskTree};
     gradient_config!(f32);
 }
 
 pub mod f64 {
     use crate::ser::f64::{IntoTaskSource, TaskDependencies};
+    use crate::source::f64::Distance;
     use crate::task::f64::{CellularBuilder, TaskSource, TaskTree};
     gradient_config!(f64);
 }
@@ -58,6 +65,7 @@ pub mod f64 {
 mod test {
     mod f32 {
         use crate::ser::f32::{CellularConfig, TaskConfig};
+        use crate::source::f32::Distance;
         use std::collections::HashMap;
 
         #[test]
@@ -65,6 +73,7 @@ mod test {
             let data = toml::to_string(&toml::toml! {
                 [cellular_a]
                 cellular.x = 5
+                cellular.distance = "md"
                 cellular.cached = true
 
                 [cellular_b]
@@ -78,6 +87,7 @@ mod test {
                 config["cellular_a"],
                 TaskConfig::Cellular(CellularConfig {
                     x: 5.0,
+                    distance: Distance::Manhattan,
                     cached: true,
                     ..Default::default()
                 })
@@ -97,6 +107,7 @@ mod test {
 
     mod f64 {
         use crate::ser::f64::{CellularConfig, TaskConfig};
+        use crate::source::f64::Distance;
         use std::collections::HashMap;
 
         #[test]
@@ -104,6 +115,7 @@ mod test {
             let data = toml::to_string(&toml::toml! {
                 [cellular_a]
                 cellular.x = 5
+                cellular.distance = "md"
                 cellular.cached = true
 
                 [cellular_b]
@@ -117,6 +129,7 @@ mod test {
                 config["cellular_a"],
                 TaskConfig::Cellular(CellularConfig {
                     x: 5.0,
+                    distance: Distance::Manhattan,
                     cached: true,
                     ..Default::default()
                 })

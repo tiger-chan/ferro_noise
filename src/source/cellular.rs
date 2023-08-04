@@ -1,3 +1,20 @@
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize),
+    serde(rename_all = "snake_case")
+)]
+pub enum Distance {
+    #[default]
+    #[cfg_attr(feature = "serde", serde(alias = "ed"))]
+    Euclidean,
+    #[cfg_attr(feature = "serde", serde(alias = "md"))]
+    Manhattan,
+}
+
 const PRIME_X: u64 = 2053;
 const PRIME_Y: u64 = 7177;
 const PRIME_Z: u64 = 4943;
@@ -7,22 +24,48 @@ const XOR_Z: u64 = 9413284231;
 
 macro_rules! cellular {
     ($T: ty) => {
+        fn manhattan_x(dx: $T) -> $T {
+            dx.abs()
+        }
+
+        fn manhattan_xy(dx: $T, dy: $T) -> $T {
+            (dx.abs() + dy.abs())
+        }
+
+        fn manhattan_xyz(dx: $T, dy: $T, dz: $T) -> $T {
+            (dx.abs() + dy.abs() + dz.abs())
+        }
+
+        fn euclidean_x(dx: $T) -> $T {
+            dx.abs()
+        }
+
+        fn euclidean_xy(dx: $T, dy: $T) -> $T {
+            (dx * dx + dy * dy).sqrt()
+        }
+
+        fn euclidean_xyz(dx: $T, dy: $T, dz: $T) -> $T {
+            (dx * dx + dy * dy + dz * dz).sqrt()
+        }
+
         #[derive(Clone, Debug, PartialEq, PartialOrd)]
         pub struct Cellular {
             spacing: [$T; 3],
             seed: u64,
+            dist: Distance,
         }
 
         impl Cellular {
             #[allow(dead_code)]
-            pub fn new(spacing: [$T; 3]) -> Self {
-                Cellular::new_seeded(spacing, 0)
+            pub fn new(spacing: [$T; 3], dist: Distance) -> Self {
+                Cellular::new_seeded(spacing, dist, 0)
             }
 
-            pub fn new_seeded(spacing: [$T; 3], seed: u64) -> Self {
+            pub fn new_seeded(spacing: [$T; 3], dist: Distance, seed: u64) -> Self {
                 Self {
                     spacing,
                     seed: seed,
+                    dist: dist,
                 }
             }
 
@@ -58,11 +101,32 @@ macro_rules! cellular {
                 let mut rng = PCG::new(seed);
                 (rng.next(), rng.next(), rng.next())
             }
+
+            fn dist_x(&self, x: $T) -> $T {
+                match self.dist {
+                    Distance::Euclidean => euclidean_x(x),
+                    Distance::Manhattan => manhattan_x(x),
+                }
+            }
+
+            fn dist_xy(&self, x: $T, y: $T) -> $T {
+                match self.dist {
+                    Distance::Euclidean => euclidean_xy(x, y),
+                    Distance::Manhattan => manhattan_xy(x, y),
+                }
+            }
+
+            fn dist_xyz(&self, x: $T, y: $T, z: $T) -> $T {
+                match self.dist {
+                    Distance::Euclidean => euclidean_xyz(x, y, z),
+                    Distance::Manhattan => manhattan_xyz(x, y, z),
+                }
+            }
         }
 
         impl Default for Cellular {
             fn default() -> Self {
-                Cellular::new_seeded([1.0, 1.0, 1.0], 0)
+                Cellular::new_seeded([1.0, 1.0, 1.0], Distance::Euclidean, 0)
             }
         }
 
@@ -76,7 +140,7 @@ macro_rules! cellular {
                 let mut min_dist: $T = 1.0;
                 for dx in -1..=1 {
                     let nfx = dx as $T + self.offset_x(ix + dx);
-                    let dist = (nfx - fx).abs();
+                    let dist = self.dist_x(nfx - fx);
                     min_dist = min_dist.min(dist);
                 }
 
@@ -100,7 +164,7 @@ macro_rules! cellular {
                         let (nx, ny) = self.offset_xy(ix + dx, iy + dy);
                         let dfx = (dx as $T + nx) - fx;
                         let dfy = (dy as $T + ny) - fy;
-                        let dist = (dfx * dfx + dfy * dfy).sqrt();
+                        let dist = self.dist_xy(dfx, dfy);
                         min_dist = min_dist.min(dist);
                     }
                 }
@@ -130,7 +194,7 @@ macro_rules! cellular {
                             let dfx = (dx as $T + nx) - fx;
                             let dfy = (dy as $T + ny) - fy;
                             let dfz = (dz as $T + nz) - fz;
-                            let dist = (dfx * dfx + dfy * dfy + dfz * dfz).sqrt();
+                            let dist = self.dist_xyz(dfx, dfy, dfz);
                             min_dist = min_dist.min(dist);
                         }
                     }
@@ -143,6 +207,7 @@ macro_rules! cellular {
 }
 
 pub mod f32 {
+    pub use super::Distance;
     use super::{PRIME_X, PRIME_Y, PRIME_Z, XOR_X, XOR_Y, XOR_Z};
     use crate::rng::PCG;
     use crate::source::f32::Noise;
@@ -151,11 +216,11 @@ pub mod f32 {
 
     #[cfg(test)]
     mod test {
-        use super::{Cellular, Noise};
+        use super::{Cellular, Distance, Noise};
 
         #[test]
         fn work() {
-            let mut cellular = Cellular::new([10.0, 10.0, 10.0]);
+            let mut cellular = Cellular::new([10.0, 10.0, 10.0], Distance::Euclidean);
             let x = cellular.sample_2d(5.0, 5.0);
             assert_eq!(x, -4.0);
         }
@@ -163,6 +228,7 @@ pub mod f32 {
 }
 
 pub mod f64 {
+    pub use super::Distance;
     use super::{PRIME_X, PRIME_Y, PRIME_Z, XOR_X, XOR_Y, XOR_Z};
     use crate::rng::PCG;
     use crate::source::f64::Noise;

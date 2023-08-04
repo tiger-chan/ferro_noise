@@ -34,7 +34,7 @@ pub mod f32 {
     boxed_noise_trait!();
 
     pub use super::blender::f32::Blender;
-    pub use super::cellular::f32::Cellular;
+    pub use super::cellular::f32::{Cellular, Distance};
     pub use super::gradient::f32::Gradient;
     pub use super::perlin_noise::f32::Perlin;
 }
@@ -45,7 +45,7 @@ pub mod f64 {
     boxed_noise_trait!();
 
     pub use super::blender::f64::Blender;
-    pub use super::cellular::f64::Cellular;
+    pub use super::cellular::f64::{Cellular, Distance};
     pub use super::gradient::f64::Gradient;
     pub use super::perlin_noise::f64::Perlin;
 }

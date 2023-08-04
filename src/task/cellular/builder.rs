@@ -3,6 +3,7 @@ macro_rules! cellular_builder {
         pub struct CellularBuilder {
             spacing: [$T; 3],
             seed: u64,
+            dist: source::Distance,
         }
 
         impl Default for CellularBuilder {
@@ -10,6 +11,7 @@ macro_rules! cellular_builder {
                 Self {
                     spacing: [1.0, 1.0, 1.0],
                     seed: 0,
+                    dist: source::Distance::Euclidean,
                 }
             }
         }
@@ -22,8 +24,13 @@ macro_rules! cellular_builder {
 
             pub fn build(&self) -> Cellular {
                 Cellular {
-                    noise: source::Cellular::new_seeded(self.spacing, self.seed),
+                    noise: source::Cellular::new_seeded(self.spacing, self.dist, self.seed),
                 }
+            }
+
+            pub fn distance(&mut self, d: source::Distance) -> &mut Self {
+                self.dist = d;
+                self
             }
 
             pub fn spacing(&mut self, s: [$T; 3]) -> &mut Self {
