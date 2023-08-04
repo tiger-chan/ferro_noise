@@ -21,6 +21,7 @@ macro_rules! task_config {
             Aggregate(AggregateConfig),
             Bias(BiasConfig),
             Constant($type),
+            Cellular(CellularConfig),
             Fractal(FractalConfig),
             Gradient(GradientConfig),
             Scale(ScaleConfig),
@@ -41,6 +42,7 @@ macro_rules! task_config {
                     Self::Aggregate(x) => x.dependencies(),
                     Self::Bias(x) => x.dependencies(),
                     Self::Constant(_) => vec![],
+                    Self::Cellular(x) => x.dependencies(),
                     Self::Fractal(x) => x.dependencies(),
                     Self::Gradient(x) => x.dependencies(),
                     Self::Scale(x) => x.dependencies(),
@@ -57,6 +59,7 @@ macro_rules! task_config {
                     TaskConfig::Aggregate(x) => x.config_into(tree),
                     TaskConfig::Bias(x) => x.config_into(tree),
                     TaskConfig::Constant(x) => TaskSource::from(*x),
+                    TaskConfig::Cellular(x) => x.config_into(tree),
                     TaskConfig::Fractal(x) => x.config_into(tree),
                     TaskConfig::Gradient(x) => x.config_into(tree),
                     TaskConfig::Scale(x) => x.config_into(tree),
@@ -73,6 +76,7 @@ macro_rules! task_config {
                     Self::Aggregate(x) => x.cached,
                     Self::Bias(x) => x.cached,
                     Self::Constant(_) => false,
+                    Self::Cellular(x) => x.cached,
                     Self::Fractal(x) => x.cached,
                     Self::Gradient(x) => x.cached,
                     Self::Scale(x) => x.cached,
@@ -209,8 +213,8 @@ macro_rules! from_str {
 pub mod f32 {
     pub(crate) use super::TaskDependencies;
     use crate::ser::f32::{
-        AggregateConfig, BiasConfig, FractalConfig, GradientConfig, ScaleConfig, ScaleOffsetConfig,
-        SelectorConfig, TransformDomainConfig,
+        AggregateConfig, BiasConfig, CellularConfig, FractalConfig, GradientConfig, ScaleConfig,
+        ScaleOffsetConfig, SelectorConfig, TransformDomainConfig,
     };
     use crate::task::f32::{CacheBuilder, TaskSource, TaskTree};
     into_task_source!(f32);
@@ -229,8 +233,8 @@ pub mod f32 {
 pub mod f64 {
     pub(crate) use super::TaskDependencies;
     use crate::ser::f64::{
-        AggregateConfig, BiasConfig, FractalConfig, GradientConfig, ScaleConfig, ScaleOffsetConfig,
-        SelectorConfig, TransformDomainConfig,
+        AggregateConfig, BiasConfig, CellularConfig, FractalConfig, GradientConfig, ScaleConfig,
+        ScaleOffsetConfig, SelectorConfig, TransformDomainConfig,
     };
     use crate::task::f64::{CacheBuilder, TaskSource, TaskTree};
     into_task_source!(f64);

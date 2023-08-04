@@ -9,6 +9,7 @@ macro_rules! task_source {
             Aggregate(Aggregator),
             Bias(Rc<RefCell<Bias>>),
             Cache(Rc<RefCell<Cache>>),
+            Cellular(Rc<RefCell<Cellular>>),
             Constant($type),
             Fractal(Rc<RefCell<Fractal>>),
             Gradient(Rc<RefCell<Gradient>>),
@@ -33,6 +34,12 @@ macro_rules! task_source {
         impl From<Cache> for TaskSource {
             fn from(value: Cache) -> Self {
                 Self::Cache(Rc::new(RefCell::new(value)))
+            }
+        }
+
+        impl From<Cellular> for TaskSource {
+            fn from(value: Cellular) -> Self {
+                Self::Cellular(Rc::new(RefCell::new(value)))
             }
         }
 
@@ -84,6 +91,7 @@ macro_rules! task_source {
                     Self::Aggregate(t) => t.sample_1d(x),
                     Self::Bias(t) => t.borrow_mut().sample_1d(x),
                     Self::Cache(t) => t.borrow_mut().sample_1d(x),
+                    Self::Cellular(t) => t.borrow_mut().sample_1d(x),
                     Self::Constant(v) => v.clone(),
                     Self::Fractal(t) => t.borrow_mut().sample_1d(x),
                     Self::Gradient(t) => t.borrow_mut().sample_1d(x),
@@ -99,6 +107,7 @@ macro_rules! task_source {
                     Self::Aggregate(t) => t.sample_2d(x, y),
                     Self::Bias(t) => t.borrow_mut().sample_2d(x, y),
                     Self::Cache(t) => t.borrow_mut().sample_2d(x, y),
+                    Self::Cellular(t) => t.borrow_mut().sample_2d(x, y),
                     Self::Constant(v) => v.clone(),
                     Self::Fractal(t) => t.borrow_mut().sample_2d(x, y),
                     Self::Gradient(t) => t.borrow_mut().sample_2d(x, y),
@@ -114,6 +123,7 @@ macro_rules! task_source {
                     Self::Aggregate(t) => t.sample_3d(x, y, z),
                     Self::Bias(t) => t.borrow_mut().sample_3d(x, y, z),
                     Self::Cache(t) => t.borrow_mut().sample_3d(x, y, z),
+                    Self::Cellular(t) => t.borrow_mut().sample_3d(x, y, z),
                     Self::Constant(v) => v.clone(),
                     Self::Fractal(t) => t.borrow_mut().sample_3d(x, y, z),
                     Self::Gradient(t) => t.borrow_mut().sample_3d(x, y, z),
@@ -130,7 +140,7 @@ macro_rules! task_source {
 pub mod f32 {
     pub(crate) use super::named_or_source::f32::NameOrSource;
     use crate::task::f32::{
-        Aggregator, Bias, Cache, Fractal, Gradient, Scale, ScaleOffset, Selector, Task,
+        Aggregator, Bias, Cache, Cellular, Fractal, Gradient, Scale, ScaleOffset, Selector, Task,
         TransformDomain,
     };
     use std::{cell::RefCell, rc::Rc};
@@ -140,7 +150,7 @@ pub mod f32 {
 pub mod f64 {
     pub(crate) use super::named_or_source::f64::NameOrSource;
     use crate::task::f64::{
-        Aggregator, Bias, Cache, Fractal, Gradient, Scale, ScaleOffset, Selector, Task,
+        Aggregator, Bias, Cache, Cellular, Fractal, Gradient, Scale, ScaleOffset, Selector, Task,
         TransformDomain,
     };
     use std::{cell::RefCell, rc::Rc};

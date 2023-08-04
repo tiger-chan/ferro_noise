@@ -52,28 +52,20 @@ pub struct PCG {
 impl PCG {
     /// Creates a new instance of the PCG with the provided seed.
     pub fn new(seed: u64) -> Self {
-        Self {
-            seed: seed + INCREMENT,
-            multiplier: MULTIPLYER,
-            increment: INCREMENT,
-        }
+        PCG::new_with_multiplier(seed, MULTIPLYER, INCREMENT)
     }
 
     /// Creates a new instance of the PCG with the provided seed and increment value.
     #[allow(dead_code)]
     pub fn new_with_increment(seed: u64, increment: u64) -> Self {
-        Self {
-            seed: seed + increment,
-            multiplier: MULTIPLYER,
-            increment: increment,
-        }
+        PCG::new_with_multiplier(seed, MULTIPLYER, increment)
     }
 
     /// Creates a new instance of the PCG with the provided seed, multiplier, and increment values.
     #[allow(dead_code)]
     pub fn new_with_multiplier(seed: u64, multiplier: u64, increment: u64) -> Self {
         Self {
-            seed: seed + increment,
+            seed: seed.wrapping_add(increment),
             multiplier: multiplier,
             increment: increment,
         }

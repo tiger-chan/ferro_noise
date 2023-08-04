@@ -1,6 +1,7 @@
 mod aggregator;
 mod bias;
 mod cache;
+mod cellular;
 mod fractal;
 mod gradient;
 mod scale;
@@ -32,6 +33,7 @@ pub mod f32 {
     pub use super::aggregator::f32::*;
     pub use super::bias::f32::*;
     pub use super::cache::f32::*;
+    pub use super::cellular::f32::*;
     pub use super::fractal::f32::*;
     pub use super::gradient::f32::*;
     pub use super::scale::f32::*;
@@ -47,6 +49,7 @@ pub mod f64 {
     pub use super::aggregator::f64::*;
     pub use super::bias::f64::*;
     pub use super::cache::f64::*;
+    pub use super::cellular::f64::*;
     pub use super::fractal::f64::*;
     pub use super::gradient::f64::*;
     pub use super::scale::f64::*;
