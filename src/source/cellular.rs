@@ -137,7 +137,7 @@ macro_rules! cellular {
                 let ix = lx.floor() as i32;
                 let fx = lx.fract();
 
-                let mut min_dist: $T = 1.0;
+                let mut min_dist: $T = 10.0;
                 for dx in -1..=1 {
                     let nfx = dx as $T + self.offset_x(ix + dx);
                     let dist = self.dist_x(nfx - fx);
@@ -158,7 +158,7 @@ macro_rules! cellular {
                 let fx = lx.fract();
                 let fy = ly.fract();
 
-                let mut min_dist: $T = 1.0;
+                let mut min_dist: $T = 10.0;
                 for dx in -1..=1 {
                     for dy in -1..=1 {
                         let (nx, ny) = self.offset_xy(ix + dx, iy + dy);
@@ -186,7 +186,7 @@ macro_rules! cellular {
                 let fy = ly.fract();
                 let fz = lz.fract();
 
-                let mut min_dist: $T = 1.0;
+                let mut min_dist: $T = 10.0;
                 for dx in -1..=1 {
                     for dy in -1..=1 {
                         for dz in -1..=1 {
