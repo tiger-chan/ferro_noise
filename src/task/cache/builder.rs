@@ -61,14 +61,14 @@ macro_rules! cache_builder {
 
 pub mod f32 {
     use super::MAX_CACHE_ENTRY;
-    use crate::task::task::f32::{NameOrSource, TaskSource};
+    use crate::task::f32::{NameOrSource, TaskSource};
     use crate::task::{cache::f32::Cache, task_tree::f32::TaskTree};
     cache_builder!(f32);
 }
 
 pub mod f64 {
     use super::MAX_CACHE_ENTRY;
-    use crate::task::task::f64::{NameOrSource, TaskSource};
+    use crate::task::f64::{NameOrSource, TaskSource};
     use crate::task::{cache::f64::Cache, task_tree::f64::TaskTree};
     cache_builder!(f64);
 }

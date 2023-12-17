@@ -74,12 +74,12 @@ macro_rules! scale_offset_builder {
 
 pub mod f32 {
     use crate::task::f32::{NameOrSource, ScaleOffset, TaskSource, TaskTree};
-    use crate::task::task::{named_to_task, source_or_message};
+    use crate::task::{named_to_task, source_or_message};
     scale_offset_builder!(f32);
 }
 
 pub mod f64 {
     use crate::task::f64::{NameOrSource, ScaleOffset, TaskSource, TaskTree};
-    use crate::task::task::{named_to_task, source_or_message};
+    use crate::task::{named_to_task, source_or_message};
     scale_offset_builder!(f64);
 }

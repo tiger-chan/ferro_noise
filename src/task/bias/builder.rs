@@ -91,12 +91,12 @@ macro_rules! bias_builder {
 
 pub mod f32 {
     use crate::task::f32::{Bias, NameOrSource, TaskSource, TaskTree};
-	use crate::task::task::source_or_message;
+	use crate::task::source_or_message;
     bias_builder!(f32);
 }
 
 pub mod f64 {
 	use crate::task::f64::{Bias, NameOrSource, TaskSource, TaskTree};
-	use crate::task::task::source_or_message;
+	use crate::task::source_or_message;
     bias_builder!(f64);
 }
