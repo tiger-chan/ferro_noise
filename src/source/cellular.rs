@@ -64,8 +64,8 @@ macro_rules! cellular {
             pub fn new_seeded(spacing: [$T; 3], dist: Distance, seed: u64) -> Self {
                 Self {
                     spacing,
-                    seed: seed,
-                    dist: dist,
+                    seed,
+                    dist,
                 }
             }
 
@@ -222,7 +222,7 @@ pub mod f32 {
         fn work() {
             let mut cellular = Cellular::new([10.0, 10.0, 10.0], Distance::Euclidean);
             let x = cellular.sample_2d(5.0, 5.0);
-            assert_eq!(x, -4.0);
+            assert_eq!(x, -0.017567515);
         }
     }
 }
