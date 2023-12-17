@@ -102,7 +102,7 @@ macro_rules! fractal_builder {
     };
 }
 
-pub(self) use super::{f32 as sf32, f64 as sf64, FractalType};
+use super::{f32 as sf32, f64 as sf64, FractalType};
 
 pub mod f32 {
     use super::{

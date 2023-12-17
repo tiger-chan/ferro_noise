@@ -95,7 +95,6 @@ mod test {
                     z1: 3.0,
                     z2: 6.0,
                     cached: true,
-                    ..Default::default()
                 })
             );
 
@@ -145,7 +144,6 @@ mod test {
                     z1: 3.0,
                     z2: 6.0,
                     cached: true,
-                    ..Default::default()
                 })
             );
 

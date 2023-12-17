@@ -94,22 +94,23 @@ macro_rules! sort_tasks {
         use std::collections::HashMap;
 
         /// https://en.wikipedia.org/wiki/Topological_sorting#Kahn's_algorithm
-        ///
+        ///```text
         /// L ← Empty list that will contain the sorted elements
         /// S ← Set of all nodes with no incoming edge
         ///
         /// while S is not empty do
         /// remove a node n from S
         ///     add n to L
-        /// 	for each node m with an edge e from n to m do
-        /// 	remove edge e from the graph
-        /// 	if m has no other incoming edges then
-        /// 		insert m into S
+        ///     for each node m with an edge e from n to m do
+        ///     remove edge e from the graph
+        ///     if m has no other incoming edges then
+        ///         insert m into S
         ///
         /// if graph has edges then
-        /// 	return error   (graph has at least one cycle)
+        ///     return error   (graph has at least one cycle)
         /// else
-        /// 	return L   (a topologically sorted order)
+        ///     return L   (a topologically sorted order)
+        /// ```
         pub(crate) fn sort_tasks(
             tasks: &HashMap<String, TaskConfig>,
         ) -> Result<Vec<String>, String> {
@@ -182,7 +183,7 @@ macro_rules! from_str {
             match result {
                 Ok(mut result) => {
                     let sorted_tasks = sort_tasks(&result)?;
-                    let mut tree = Box::new(TaskTree::new());
+                    let mut tree = Box::<TaskTree>::default();
 
                     for task_name in sorted_tasks {
                         let mut name = task_name.clone();

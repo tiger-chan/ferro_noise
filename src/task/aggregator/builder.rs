@@ -1,5 +1,6 @@
 macro_rules! aggregator_builder {
     ($type: ty) => {
+        #[derive(Default)]
         pub struct AggregatorBuilder {
             op: Operation,
             initial: Option<$type>,
@@ -9,14 +10,6 @@ macro_rules! aggregator_builder {
 
         #[allow(dead_code)]
         impl AggregatorBuilder {
-            pub fn new() -> Self {
-                Self {
-                    op: Operation::Add,
-                    initial: None,
-                    tasks: vec![],
-                    refs: vec![],
-                }
-            }
             pub fn add_named_task<S: Into<String>>(&mut self, name: S) -> &mut Self {
                 self.refs.push(name.into());
                 self

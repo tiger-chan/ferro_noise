@@ -1,16 +1,11 @@
 macro_rules! task_tree {
     ($type: ty) => {
+        #[derive(Default)]
         pub struct TaskTree {
             tasks: HashMap<String, TaskSource>,
         }
 
         impl TaskTree {
-            pub fn new() -> Self {
-                Self {
-                    tasks: HashMap::new(),
-                }
-            }
-
             pub fn add_task<S: Into<String>, V: Into<TaskSource>>(&mut self, name: S, task: V) {
                 self.tasks.insert(name.into(), task.into());
             }
@@ -77,13 +72,13 @@ mod tests {
 
         #[test]
         fn aggregate_named_result() {
-            let mut tree = TaskTree::new();
+            let mut tree = TaskTree::default();
 
             tree.add_task("task 1", 1.0);
 
             tree.add_task(
                 "task 2",
-                AggregatorBuilder::new()
+                AggregatorBuilder::default()
                     .operation(Operation::Add)
                     .add_named_task("task 1")
                     .add_named_task("task 1")
@@ -96,7 +91,7 @@ mod tests {
 
         #[test]
         fn constant_result() {
-            let mut tree = TaskTree::new();
+            let mut tree = TaskTree::default();
 
             tree.add_task("task 1", 1.0);
 
@@ -105,7 +100,7 @@ mod tests {
 
         #[test]
         fn bias_result() {
-            let mut tree = TaskTree::new();
+            let mut tree = TaskTree::default();
 
             tree.add_task("task 1", 1.0);
             tree.add_task("task 2", 0.0);
@@ -124,7 +119,7 @@ mod tests {
 
         #[test]
         fn cache_result() {
-            let mut tree = TaskTree::new();
+            let mut tree = TaskTree::default();
 
             tree.add_task("task 1", 1.0);
 
@@ -141,7 +136,7 @@ mod tests {
 
         #[test]
         fn selector_result() {
-            let mut tree = TaskTree::new();
+            let mut tree = TaskTree::default();
 
             tree.add_task("task 1", 1.0);
             tree.add_task("task 2", 0.0);
@@ -151,7 +146,7 @@ mod tests {
 
             tree.add_task(
                 "task 6",
-                SelectorBuilder::new()
+                SelectorBuilder::default()
                     .named_condition("task 1")
                     .named_falloff("task 2")
                     .named_lower("task 3")
@@ -172,13 +167,13 @@ mod tests {
 
         #[test]
         fn aggregate_named_result() {
-            let mut tree = TaskTree::new();
+            let mut tree = TaskTree::default();
 
             tree.add_task("task 1", 1.0);
 
             tree.add_task(
                 "task 2",
-                AggregatorBuilder::new()
+                AggregatorBuilder::default()
                     .operation(Operation::Add)
                     .add_named_task("task 1")
                     .add_named_task("task 1")
@@ -191,7 +186,7 @@ mod tests {
 
         #[test]
         fn constant_result() {
-            let mut tree = TaskTree::new();
+            let mut tree = TaskTree::default();
 
             tree.add_task("task 1", 1.0);
 
@@ -200,7 +195,7 @@ mod tests {
 
         #[test]
         fn bias_result() {
-            let mut tree = TaskTree::new();
+            let mut tree = TaskTree::default();
 
             tree.add_task("task 1", 1.0);
             tree.add_task("task 2", 0.0);
@@ -219,7 +214,7 @@ mod tests {
 
         #[test]
         fn cache_result() {
-            let mut tree = TaskTree::new();
+            let mut tree = TaskTree::default();
 
             tree.add_task("task 1", 1.0);
 
@@ -236,7 +231,7 @@ mod tests {
 
         #[test]
         fn selector_result() {
-            let mut tree = TaskTree::new();
+            let mut tree = TaskTree::default();
 
             tree.add_task("task 1", 1.0);
             tree.add_task("task 2", 0.0);
@@ -246,7 +241,7 @@ mod tests {
 
             tree.add_task(
                 "task 6",
-                SelectorBuilder::new()
+                SelectorBuilder::default()
                     .named_condition("task 1")
                     .named_falloff("task 2")
                     .named_lower("task 3")

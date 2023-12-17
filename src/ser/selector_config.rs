@@ -45,7 +45,7 @@ macro_rules! selector_config {
 
         impl IntoTaskSource for SelectorConfig {
             fn config_into(&self, tree: &TaskTree) -> TaskSource {
-                let mut builder = SelectorBuilder::new();
+                let mut builder = SelectorBuilder::default();
 
                 let blender: Blender = match self.interp {
                     FractalBlender::Cubic => math::cubic_curve,

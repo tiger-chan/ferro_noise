@@ -12,8 +12,8 @@ macro_rules! selector_builder_type {
             threshold: NameOrSource,
         }
 
-        impl SelectorBuilder {
-            pub fn new() -> Self {
+        impl Default for SelectorBuilder {
+            fn default() -> Self {
                 use NameOrSource::Source;
                 Self {
                     blender: math::linear_curve,
@@ -24,7 +24,9 @@ macro_rules! selector_builder_type {
                     threshold: Source(0.5.into()),
                 }
             }
+        }
 
+        impl SelectorBuilder {
             pub fn blender(&mut self, blender: Blender) -> &mut Self {
                 self.blender = blender;
                 self

@@ -107,7 +107,6 @@ mod test {
                     source: "other".to_owned().into(),
                     bias: 1.0.into(),
                     cached: true,
-                    ..Default::default()
                 })
             );
 
@@ -152,7 +151,6 @@ mod test {
                     source: "other".to_owned().into(),
                     bias: 1.0.into(),
                     cached: true,
-                    ..Default::default()
                 })
             );
 
