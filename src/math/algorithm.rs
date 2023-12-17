@@ -48,7 +48,7 @@ macro_rules! impl_floor_integer_div {
                 assert!(divisor != 0, "Division by zero is not allowed.");
                 let negative = ((self ^ divisor) < 0) as Self;
                 let has_remainder = ((self % divisor) != 0) as Self;
-                (*self / divisor) + (has_remainder * negative * -1)
+                (*self / divisor) + -(has_remainder * negative)
             }
         }
 

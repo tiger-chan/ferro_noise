@@ -62,12 +62,11 @@ impl PCG {
     }
 
     /// Creates a new instance of the PCG with the provided seed, multiplier, and increment values.
-    #[allow(dead_code)]
     pub fn new_with_multiplier(seed: u64, multiplier: u64, increment: u64) -> Self {
         Self {
             seed: seed.wrapping_add(increment),
-            multiplier: multiplier,
-            increment: increment,
+            multiplier,
+            increment,
         }
     }
 
@@ -99,7 +98,7 @@ impl PCG {
     /// let random_u32: u32 = rng.next();
     /// println!("Random u32: {random_u32}");
     /// ```
-    #[allow(dead_code)]
+    #[allow(clippy::should_implement_trait)]
     pub fn next<T>(&mut self) -> T
     where
         PCG: Random<T>,
@@ -263,6 +262,6 @@ mod tests {
     fn bool_generate_random() {
         let mut rand = PCG::default();
         let x = rand.next::<bool>();
-        assert_eq!(x, true);
+        assert!(x);
     }
 }

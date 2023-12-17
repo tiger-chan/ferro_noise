@@ -41,9 +41,9 @@ macro_rules! gradient {
 
                 let (dir, mag) = Gradient::pre_calc(&s1, &s2);
                 Self {
-                    s1: s1,
-                    dir: dir,
-                    mag: mag,
+                    s1,
+                    dir,
+                    mag,
                 }
             }
         }
@@ -60,9 +60,9 @@ macro_rules! gradient {
                 let s2 = s2.into();
                 let (dir, mag) = Gradient::pre_calc(&s1, &s2);
                 Self {
-                    s1: s1,
-                    dir: dir,
-                    mag: mag,
+                    s1,
+                    dir,
+                    mag,
                 }
             }
 

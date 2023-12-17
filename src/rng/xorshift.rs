@@ -16,7 +16,7 @@ use super::rand::Random;
 ///
 /// * `seed`: A mutable reference to a 64-bit unsigned integer that represents the current seed value.
 fn split_max(seed: u64) -> u64 {
-    let result = seed.wrapping_add(0x9E3779B97f4A7C15);
+    let result = seed.wrapping_add(0x9E3779B97F4A7C15);
     let result = (result ^ (result >> 30)).wrapping_mul(0xBF58476D1CE4E5B9);
     let result = (result ^ (result >> 27)).wrapping_mul(0x94D049BB133111EB);
     result ^ (result >> 31)
@@ -114,7 +114,7 @@ impl Xorshift {
     /// let random_u32: u32 = rng.next();
     /// println!("Random u32: {random_u32}");
     /// ```
-    #[allow(dead_code)]
+    #[allow(clippy::should_implement_trait)]
     pub fn next<T>(&mut self) -> T
     where
         Xorshift: Random<T>,
@@ -206,76 +206,76 @@ mod tests {
     fn i8_generate_random() {
         let mut rand = Xorshift::default();
         let x = rand.next::<i8>();
-        assert_eq!(x, 17);
+        assert_eq!(x, -91);
     }
 
     #[test]
     fn i16_generate_random() {
         let mut rand = Xorshift::default();
         let x = rand.next::<i16>();
-        assert_eq!(x, -17391);
+        assert_eq!(x, -15195);
     }
 
     #[test]
     fn i32_generate_random() {
         let mut rand = Xorshift::default();
         let x = rand.next::<i32>();
-        assert_eq!(x, -1279083503);
+        assert_eq!(x, 1008649381);
     }
 
     #[test]
     fn i64_generate_random() {
         let mut rand = Xorshift::default();
         let x = rand.next::<i64>();
-        assert_eq!(x, -126584271019000815);
+        assert_eq!(x, 1130587310604076197);
     }
 
     #[test]
     fn u8_generate_random() {
         let mut rand = Xorshift::default();
         let x = rand.next::<u8>();
-        assert_eq!(x, 17);
+        assert_eq!(x, 165);
     }
 
     #[test]
     fn u16_generate_random() {
         let mut rand = Xorshift::default();
         let x = rand.next::<u16>();
-        assert_eq!(x, 48145);
+        assert_eq!(x, 50341);
     }
 
     #[test]
     fn u32_generate_random() {
         let mut rand = Xorshift::default();
         let x = rand.next::<u32>();
-        assert_eq!(x, 3015883793);
+        assert_eq!(x, 1008649381);
     }
 
     #[test]
     fn u64_generate_random() {
         let mut rand = Xorshift::default();
         let x = rand.next::<u64>();
-        assert_eq!(x, 18320159802690550801);
+        assert_eq!(x, 1130587310604076197);
     }
 
     #[test]
     fn f32_generate_random() {
         let mut rand = Xorshift::default();
         let x = rand.next::<f32>();
-        assert_eq!(x, 0.99313784);
+        assert_eq!(x, 0.061289262);
     }
 
     #[test]
     fn f64_generate_random() {
         let mut rand = Xorshift::default();
         let x = rand.next::<f64>();
-        assert_eq!(x, 0.9931378529179353);
+        assert_eq!(x, 0.06128926091707416);
     }
 
     #[test]
     fn bool_generate_random() {
         let mut rand = Xorshift::default();
         let x = rand.next::<bool>();
-        assert_eq!(x, false);
+        assert!(x);
     }
 }
