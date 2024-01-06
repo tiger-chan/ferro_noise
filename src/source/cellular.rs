@@ -286,27 +286,22 @@ macro_rules! cellular {
                 let fx = lx.fract();
                 let fy = ly.fract();
 
-                #[rustfmt::skip]
-                        const CELLS: [(i32, i32); 9] = [
-                            (-1, -1), (-1, 0), (-1, 1),
-                            (0, -1), (0,0), (0, 1),
-                            (1, -1), (1, 0), (1, 1),
-                        ];
-
                 // Define an array to store distances to the nearest and second-nearest points
                 let mut distances: [$T; 2] = [10.0, 10.0];
-                for (dx, dy) in CELLS {
-                    let n = self.offset_xy(ix + dx, iy + dy);
-                    let dfx = (dx as $T + n.0) - fx;
-                    let dfy = (dy as $T + n.1) - fy;
-                    let dist = self.dist_xy(dfx, dfy);
+                for dx in -1..=1 {
+                    for dy in -1..=1 {
+                        let n = self.offset_xy(ix + dx, iy + dy);
+                        let dfx = (dx as $T + n.0) - fx;
+                        let dfy = (dy as $T + n.1) - fy;
+                        let dist = self.dist_xy(dfx, dfy);
 
-                    // Update distances array
-                    if dist < distances[0] {
-                        distances.swap(0, 1);
-                        distances[0] = dist;
-                    } else if dist < distances[1] {
-                        distances[1] = dist;
+                        // Update distances array
+                        if dist <= distances[0] {
+                            distances.swap(0, 1);
+                            distances[0] = dist;
+                        } else if dist < distances[1] {
+                            distances[1] = dist;
+                        }
                     }
                 }
 
@@ -335,7 +330,8 @@ macro_rules! cellular {
                 let fy = ly.fract();
                 let fz = lz.fract();
 
-                let mut min_dist: $T = 10.0;
+                // Define an array to store distances to the nearest and second-nearest points
+                let mut distances: [$T; 2] = [10.0, 10.0];
                 for dx in -1..=1 {
                     for dy in -1..=1 {
                         for dz in -1..=1 {
@@ -344,12 +340,27 @@ macro_rules! cellular {
                             let dfy = (dy as $T + n.1) - fy;
                             let dfz = (dz as $T + n.2) - fz;
                             let dist = self.dist_xyz(dfx, dfy, dfz);
-                            min_dist = min_dist.min(dist);
+
+                            // Update distances array
+                            if dist <= distances[0] {
+                                distances.swap(0, 1);
+                                distances[0] = dist;
+                            } else if dist < distances[1] {
+                                distances[1] = dist;
+                            }
                         }
                     }
                 }
 
-                min_dist * 2.0 - 1.0
+                // Calculate normalized difference between distances
+                let noise_value = if distances[1] != 0.0 {
+                    (distances[0] - distances[1]) / distances[1]
+                } else {
+                    0.0
+                };
+
+                // Return the normalized noise value
+                noise_value
             }
         }
     };
