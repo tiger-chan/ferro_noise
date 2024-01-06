@@ -256,23 +256,30 @@ macro_rules! cellular {
                 let ix = lx.floor() as i32;
                 let fx = lx.fract();
 
-                const CELLS: [i32; 2] = [-1, 1];
-
-                let origin = self.offset_x(ix);
-                let mut end = origin;
-                let mut min_dist: $T = 10.0;
-                for dx in CELLS {
+                // Define an array to store distances to the nearest and second-nearest points
+                let mut distances: [$T; 2] = [10.0, 10.0];
+                for dx in -1..=1 {
                     let nfx = dx as $T + self.offset_x(ix + dx);
                     let dist = self.dist_x(nfx - fx);
-                    if dist < min_dist {
-                        end = nfx;
-                        min_dist = dist;
+
+                    // Update distances array
+                    if dist <= distances[0] {
+                        distances.swap(0, 1);
+                        distances[0] = dist;
+                    } else if dist < distances[1] {
+                        distances[1] = dist;
                     }
                 }
 
-                let a = (fx - origin) / (end - origin);
-                let a = if a > 0.5 { a - 0.5 } else { a };
-                a * 2.0
+                // Calculate normalized difference between distances
+                let noise_value = if distances[1] != 0.0 {
+                    (distances[0] - distances[1]) / distances[1]
+                } else {
+                    0.0
+                };
+
+                // Return the normalized noise value
+                noise_value
             }
 
             /// Calculates the dot product of the x, y values scaled to the range [-1, 1].
