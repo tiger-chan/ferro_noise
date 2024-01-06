@@ -1,5 +1,5 @@
 /// Billowing
-pub(self) use super::{f32 as sf32, f64 as sf64};
+use super::{f32 as sf32, f64 as sf64};
 
 macro_rules! eval_fn {
     ($type: ty) => {

@@ -88,7 +88,7 @@ mod tests {
 		use crate::task::f32::{Task, SelectorBuilder};
 		#[test]
 		fn task_type_selector_tests() {
-			let mut result = SelectorBuilder::new()
+			let mut result = SelectorBuilder::default()
 				.lower(0.0)
 				.upper(1.0)
 				.condition(1.0)
@@ -98,7 +98,7 @@ mod tests {
 			assert_eq!(result.sample_2d(0.0, 0.0), 1.0);
 			assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 1.0);
 	
-			let mut result = SelectorBuilder::new()
+			let mut result = SelectorBuilder::default()
 				.lower(0.0)
 				.upper(1.0)
 				.condition(0.0)
@@ -107,7 +107,7 @@ mod tests {
 			assert_eq!(result.sample_2d(0.0, 0.0), 0.0);
 			assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 0.0);
 	
-			let mut result = SelectorBuilder::new()
+			let mut result = SelectorBuilder::default()
 				.lower(0.0)
 				.condition(0.5)
 				.falloff(0.25)
@@ -117,7 +117,7 @@ mod tests {
 			assert_eq!(result.sample_2d(0.0, 0.0), 0.5);
 			assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 0.5);
 	
-			let mut result = SelectorBuilder::new()
+			let mut result = SelectorBuilder::default()
 				.lower(0.0)
 				.upper(1.0)
 				.threshold(0.5)
@@ -128,7 +128,7 @@ mod tests {
 			assert_eq!(result.sample_2d(0.0, 0.0), 1.0);
 			assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 1.0);
 	
-			let mut result = SelectorBuilder::new()
+			let mut result = SelectorBuilder::default()
 				.lower(0.0)
 				.upper(1.0)
 				.threshold(0.5)
@@ -139,7 +139,7 @@ mod tests {
 			assert_eq!(result.sample_2d(0.0, 0.0), 0.0);
 			assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 0.0);
 	
-			let mut result = SelectorBuilder::new()
+			let mut result = SelectorBuilder::default()
 				.lower(0.0)
 				.upper(1.0)
 				.threshold(0.5)
@@ -157,7 +157,7 @@ mod tests {
 		use crate::task::f64::{Task, SelectorBuilder};
 		#[test]
 		fn task_type_selector_tests() {
-			let mut result = SelectorBuilder::new()
+			let mut result = SelectorBuilder::default()
 				.lower(0.0)
 				.upper(1.0)
 				.condition(1.0)
@@ -167,7 +167,7 @@ mod tests {
 			assert_eq!(result.sample_2d(0.0, 0.0), 1.0);
 			assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 1.0);
 	
-			let mut result = SelectorBuilder::new()
+			let mut result = SelectorBuilder::default()
 				.lower(0.0)
 				.upper(1.0)
 				.condition(0.0)
@@ -176,7 +176,7 @@ mod tests {
 			assert_eq!(result.sample_2d(0.0, 0.0), 0.0);
 			assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 0.0);
 	
-			let mut result = SelectorBuilder::new()
+			let mut result = SelectorBuilder::default()
 				.lower(0.0)
 				.condition(0.5)
 				.falloff(0.25)
@@ -186,7 +186,7 @@ mod tests {
 			assert_eq!(result.sample_2d(0.0, 0.0), 0.5);
 			assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 0.5);
 	
-			let mut result = SelectorBuilder::new()
+			let mut result = SelectorBuilder::default()
 				.lower(0.0)
 				.upper(1.0)
 				.threshold(0.5)
@@ -197,7 +197,7 @@ mod tests {
 			assert_eq!(result.sample_2d(0.0, 0.0), 1.0);
 			assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 1.0);
 	
-			let mut result = SelectorBuilder::new()
+			let mut result = SelectorBuilder::default()
 				.lower(0.0)
 				.upper(1.0)
 				.threshold(0.5)
@@ -208,7 +208,7 @@ mod tests {
 			assert_eq!(result.sample_2d(0.0, 0.0), 0.0);
 			assert_eq!(result.sample_3d(0.0, 0.0, 0.0), 0.0);
 	
-			let mut result = SelectorBuilder::new()
+			let mut result = SelectorBuilder::default()
 				.lower(0.0)
 				.upper(1.0)
 				.threshold(0.5)

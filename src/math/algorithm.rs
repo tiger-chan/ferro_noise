@@ -1,3 +1,130 @@
+/// Performs floor division of two integers.
+///
+/// The `floor_div` function takes two integers, `dividend` and `divisor`,
+/// and returns the result of the floor division of `dividend` by `divisor`.
+/// Floor division rounds the quotient towards negative infinity, i.e., the result
+/// will be the largest integer that is less than or equal to the exact quotient.
+///
+/// # Panics
+///
+/// The function will panic if the `divisor` is zero, as dividing by zero is undefined.
+///
+/// # Arguments
+///
+/// * `dividend`: An `i32` representing the numerator of the division operation.
+/// * `divisor`: An `i32` representing the denominator of the division operation.
+///
+/// # Returns
+///
+/// The result of the floor division as an `i32`.
+///
+/// # Safety
+///
+/// This function is safe to use with valid inputs, but it is the caller's responsibility
+/// to ensure that the inputs do not lead to arithmetic overflow or undefined behavior.
+///
+/// # Examples
+///
+/// ```
+/// extern crate ferro_noise;
+/// use ferro_noise::math::FloorDiv;
+/// let result = 10.floor_div(3);
+/// assert_eq!(result, 3);
+///
+/// let result = (-10).floor_div(3);
+/// assert_eq!(result, -4);
+///
+/// let result = 15.floor_div(-4);
+/// assert_eq!(result, -4);
+/// ```
+pub trait FloorDiv: Sized + PartialOrd + Ord + Eq + Copy {
+    fn floor_div(&self, divisor: Self) -> Self;
+}
+
+macro_rules! impl_floor_integer_div {
+    ($T: ty, $test_mod: ident) => {
+        impl FloorDiv for $T {
+            fn floor_div(&self, divisor: Self) -> Self {
+                assert!(divisor != 0, "Division by zero is not allowed.");
+                let negative = ((self ^ divisor) < 0) as Self;
+                let has_remainder = ((self % divisor) != 0) as Self;
+                (*self / divisor) + -(has_remainder * negative)
+            }
+        }
+
+        #[cfg(test)]
+        mod $test_mod {
+            use crate::math::FloorDiv;
+
+            #[test]
+            fn simple_div() {
+                let result = 10.floor_div(3);
+                assert_eq!(result, 3);
+            }
+
+            #[test]
+            fn negative_simple_div() {
+                let result = (-10).floor_div(3);
+                assert_eq!(result, -4);
+            }
+
+            #[test]
+            fn negative_divisor() {
+                let result = 15.floor_div(-4);
+                assert_eq!(result, -4);
+            }
+        }
+    };
+}
+
+macro_rules! impl_floor_uint_div {
+    ($T: ty, $test_mod: ident) => {
+        impl FloorDiv for $T {
+            fn floor_div(&self, divisor: Self) -> Self {
+                assert!(divisor != 0, "Division by zero is not allowed.");
+                (*self / divisor)
+            }
+        }
+
+        #[cfg(test)]
+        mod $test_mod {
+            use crate::math::FloorDiv;
+
+            #[test]
+            fn simple_div() {
+                let result = 10.floor_div(3);
+                assert_eq!(result, 3);
+            }
+
+            #[test]
+            fn negative_simple_div() {
+                let result = (-10).floor_div(3);
+                assert_eq!(result, -4);
+            }
+
+            #[test]
+            fn negative_divisor() {
+                let result = 15.floor_div(-4);
+                assert_eq!(result, -4);
+            }
+        }
+    };
+}
+
+impl_floor_integer_div!(i8, i8_tests);
+impl_floor_integer_div!(i16, i16_tests);
+impl_floor_integer_div!(i32, i32_tests);
+impl_floor_integer_div!(i64, i64_tests);
+impl_floor_integer_div!(i128, i128_tests);
+impl_floor_integer_div!(isize, isize_tests);
+
+impl_floor_uint_div!(u8, u8_tests);
+impl_floor_uint_div!(u16, u16_tests);
+impl_floor_uint_div!(u32, u32_tests);
+impl_floor_uint_div!(u64, u64_tests);
+impl_floor_uint_div!(u128, u128_tests);
+impl_floor_uint_div!(usize, usize_tests);
+
 macro_rules! clamp {
     ($type: ty) => {
         /// Clamps a value between a minimum and maximum value.
@@ -134,128 +261,128 @@ macro_rules! quintic {
 
 pub mod f32 {
     clamp!(f32);
-	cubic!(f32);
+    cubic!(f32);
     lerp!(f32);
-	linear!(f32);
+    linear!(f32);
     min!(f32);
     max!(f32);
     nearly_eq!(f32);
-	quintic!(f32);
+    quintic!(f32);
 }
 
 pub mod f64 {
     clamp!(f64);
-	cubic!(f64);
+    cubic!(f64);
     lerp!(f64);
-	linear!(f64);
+    linear!(f64);
     min!(f64);
     max!(f64);
     nearly_eq!(f64);
-	quintic!(f64);
+    quintic!(f64);
 }
 
 #[cfg(test)]
 mod tests {
 
-	mod f32 {
-		use crate::math::f32::*;
-		#[test]
-		fn lerp_tests() {
-			let result = lerp(0.0, 1.0, 0.4);
-			assert_eq!(result, 0.4);
-	
-			let result = lerp(0.0, 10.0, 0.4);
-			assert_eq!(result, 4.0);
-		}
-	
-		#[test]
-		fn clamp_tests() {	
-			let result = clamp(0.0, 1.0, 5.0);
-			assert_eq!(result, 1.0);
-	
-			let result = clamp(2.0, 1.0, 5.0);
-			assert_eq!(result, 2.0);
-	
-			let result = clamp(6.0, 1.0, 5.0);
-			assert_eq!(result, 5.0);
-		}
-	
-		#[test]
-		fn cubic_curve_tests() {
-			let result = cubic_curve(0.0);
-			assert_eq!(result, 0.0);
-	
-			let result = cubic_curve(1.0);
-			assert_eq!(result, 1.0);
-	
-			let result = cubic_curve(1.5);
-			assert_eq!(result, 0.0);
-	
-			let result = cubic_curve(2.0);
-			assert_eq!(result, -4.0);
-		}
-	
-		#[test]
-		fn quintic_curve_tests() {
-			let result = quintic_curve(0.0);
-			assert_eq!(result, 0.0);
-	
-			let result = quintic_curve(1.0);
-			assert_eq!(result, 1.0);
-	
-			let result = quintic_curve(2.0);
-			assert_eq!(result, 32.0);
-		}
-	}
-	
-	mod f64 {
-		use crate::math::f64::*;
-		#[test]
-		fn lerp_tests() {
-			let result = lerp(0.0, 1.0, 0.4);
-			assert_eq!(result, 0.4);
-	
-			let result = lerp(0.0, 10.0, 0.4);
-			assert_eq!(result, 4.0);
-		}
-	
-		#[test]
-		fn clamp_tests() {	
-			let result = clamp(0.0, 1.0, 5.0);
-			assert_eq!(result, 1.0);
-	
-			let result = clamp(2.0, 1.0, 5.0);
-			assert_eq!(result, 2.0);
-	
-			let result = clamp(6.0, 1.0, 5.0);
-			assert_eq!(result, 5.0);
-		}
-	
-		#[test]
-		fn cubic_curve_tests() {
-			let result = cubic_curve(0.0);
-			assert_eq!(result, 0.0);
-	
-			let result = cubic_curve(1.0);
-			assert_eq!(result, 1.0);
-	
-			let result = cubic_curve(1.5);
-			assert_eq!(result, 0.0);
-	
-			let result = cubic_curve(2.0);
-			assert_eq!(result, -4.0);
-		}
-	
-		#[test]
-		fn quintic_curve_tests() {
-			let result = quintic_curve(0.0);
-			assert_eq!(result, 0.0);
-	
-			let result = quintic_curve(1.0);
-			assert_eq!(result, 1.0);
-	
-			let result = quintic_curve(2.0);
-			assert_eq!(result, 32.0);
-		}
-	}
+    mod f32 {
+        use crate::math::f32::*;
+        #[test]
+        fn lerp_tests() {
+            let result = lerp(0.0, 1.0, 0.4);
+            assert_eq!(result, 0.4);
+
+            let result = lerp(0.0, 10.0, 0.4);
+            assert_eq!(result, 4.0);
+        }
+
+        #[test]
+        fn clamp_tests() {
+            let result = clamp(0.0, 1.0, 5.0);
+            assert_eq!(result, 1.0);
+
+            let result = clamp(2.0, 1.0, 5.0);
+            assert_eq!(result, 2.0);
+
+            let result = clamp(6.0, 1.0, 5.0);
+            assert_eq!(result, 5.0);
+        }
+
+        #[test]
+        fn cubic_curve_tests() {
+            let result = cubic_curve(0.0);
+            assert_eq!(result, 0.0);
+
+            let result = cubic_curve(1.0);
+            assert_eq!(result, 1.0);
+
+            let result = cubic_curve(1.5);
+            assert_eq!(result, 0.0);
+
+            let result = cubic_curve(2.0);
+            assert_eq!(result, -4.0);
+        }
+
+        #[test]
+        fn quintic_curve_tests() {
+            let result = quintic_curve(0.0);
+            assert_eq!(result, 0.0);
+
+            let result = quintic_curve(1.0);
+            assert_eq!(result, 1.0);
+
+            let result = quintic_curve(2.0);
+            assert_eq!(result, 32.0);
+        }
+    }
+
+    mod f64 {
+        use crate::math::f64::*;
+        #[test]
+        fn lerp_tests() {
+            let result = lerp(0.0, 1.0, 0.4);
+            assert_eq!(result, 0.4);
+
+            let result = lerp(0.0, 10.0, 0.4);
+            assert_eq!(result, 4.0);
+        }
+
+        #[test]
+        fn clamp_tests() {
+            let result = clamp(0.0, 1.0, 5.0);
+            assert_eq!(result, 1.0);
+
+            let result = clamp(2.0, 1.0, 5.0);
+            assert_eq!(result, 2.0);
+
+            let result = clamp(6.0, 1.0, 5.0);
+            assert_eq!(result, 5.0);
+        }
+
+        #[test]
+        fn cubic_curve_tests() {
+            let result = cubic_curve(0.0);
+            assert_eq!(result, 0.0);
+
+            let result = cubic_curve(1.0);
+            assert_eq!(result, 1.0);
+
+            let result = cubic_curve(1.5);
+            assert_eq!(result, 0.0);
+
+            let result = cubic_curve(2.0);
+            assert_eq!(result, -4.0);
+        }
+
+        #[test]
+        fn quintic_curve_tests() {
+            let result = quintic_curve(0.0);
+            assert_eq!(result, 0.0);
+
+            let result = quintic_curve(1.0);
+            assert_eq!(result, 1.0);
+
+            let result = quintic_curve(2.0);
+            assert_eq!(result, 32.0);
+        }
+    }
 }

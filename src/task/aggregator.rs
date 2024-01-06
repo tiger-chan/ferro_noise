@@ -121,7 +121,7 @@ mod tests {
         use crate::task::f32::{AggregatorBuilder, Operation, Task};
         #[test]
         fn aggregator_add_tests() {
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Add)
                 .initial(0.0)
                 .add_task(0.5)
@@ -140,7 +140,7 @@ mod tests {
             assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 1.0);
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 1.0);
 
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Add)
                 .initial(0.0)
                 .add_task(0.5)
@@ -162,7 +162,7 @@ mod tests {
 
         #[test]
         fn aggregator_avg_tests() {
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Avg)
                 .initial(0.0)
                 .add_task(0.5)
@@ -181,7 +181,7 @@ mod tests {
             assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Avg)
                 .initial(0u16)
                 .add_task(0.5)
@@ -203,7 +203,7 @@ mod tests {
 
         #[test]
         fn aggregator_div_tests() {
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Div)
                 .initial(2.0)
                 .add_task(1.0)
@@ -222,7 +222,7 @@ mod tests {
             assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Div)
                 .initial(2.0)
                 .add_task(4.0)
@@ -244,7 +244,7 @@ mod tests {
 
         #[test]
         fn aggregator_max_tests() {
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Max)
                 .add_task(0.2)
                 .add_task(0.5)
@@ -262,7 +262,7 @@ mod tests {
             assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Max)
                 .initial(-2.0)
                 .add_task(-0.05)
@@ -284,7 +284,7 @@ mod tests {
 
         #[test]
         fn aggregator_min_tests() {
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Min)
                 .add_task(0.5)
                 .add_task(3.0)
@@ -302,7 +302,7 @@ mod tests {
             assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Min)
                 .initial(2.0)
                 .add_task(5.0)
@@ -324,7 +324,7 @@ mod tests {
 
         #[test]
         fn aggregator_mul_tests() {
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Mul)
                 .add_task(0.5)
                 .add_task(0.5)
@@ -342,7 +342,7 @@ mod tests {
             assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.25);
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.25);
 
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Mul)
                 .add_task(0.5)
                 .add_task(0.5)
@@ -363,7 +363,7 @@ mod tests {
 
         #[test]
         fn aggregator_sub_tests() {
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Sub)
                 .initial(1.0)
                 .add_task(0.5)
@@ -382,7 +382,7 @@ mod tests {
             assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.0);
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.0);
 
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Sub)
                 .initial(1.0)
                 .add_task(0.5)
@@ -407,7 +407,7 @@ mod tests {
         use crate::task::f64::{AggregatorBuilder, Operation, Task};
         #[test]
         fn aggregator_add_tests() {
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Add)
                 .initial(0.0)
                 .add_task(0.5)
@@ -426,7 +426,7 @@ mod tests {
             assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 1.0);
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 1.0);
 
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Add)
                 .initial(0.0)
                 .add_task(0.5)
@@ -448,7 +448,7 @@ mod tests {
 
         #[test]
         fn aggregator_avg_tests() {
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Avg)
                 .initial(0.0)
                 .add_task(0.5)
@@ -467,7 +467,7 @@ mod tests {
             assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Avg)
                 .initial(0u16)
                 .add_task(0.5)
@@ -489,7 +489,7 @@ mod tests {
 
         #[test]
         fn aggregator_div_tests() {
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Div)
                 .initial(2.0)
                 .add_task(1.0)
@@ -508,7 +508,7 @@ mod tests {
             assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Div)
                 .initial(2.0)
                 .add_task(4.0)
@@ -530,7 +530,7 @@ mod tests {
 
         #[test]
         fn aggregator_max_tests() {
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Max)
                 .add_task(0.2)
                 .add_task(0.5)
@@ -548,7 +548,7 @@ mod tests {
             assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Max)
                 .initial(-2.0)
                 .add_task(-0.05)
@@ -570,7 +570,7 @@ mod tests {
 
         #[test]
         fn aggregator_min_tests() {
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Min)
                 .add_task(0.5)
                 .add_task(3.0)
@@ -588,7 +588,7 @@ mod tests {
             assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.5);
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.5);
 
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Min)
                 .initial(2.0)
                 .add_task(5.0)
@@ -610,7 +610,7 @@ mod tests {
 
         #[test]
         fn aggregator_mul_tests() {
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Mul)
                 .add_task(0.5)
                 .add_task(0.5)
@@ -628,7 +628,7 @@ mod tests {
             assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.25);
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.25);
 
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Mul)
                 .add_task(0.5)
                 .add_task(0.5)
@@ -649,7 +649,7 @@ mod tests {
 
         #[test]
         fn aggregator_sub_tests() {
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Sub)
                 .initial(1.0)
                 .add_task(0.5)
@@ -668,7 +668,7 @@ mod tests {
             assert_eq!(result.sample_3d(2.0, 2.0, 2.0), 0.0);
             assert_eq!(result.sample_3d(3.0, 3.0, 3.0), 0.0);
 
-            let mut result = AggregatorBuilder::new()
+            let mut result = AggregatorBuilder::default()
                 .operation(Operation::Sub)
                 .initial(1.0)
                 .add_task(0.5)

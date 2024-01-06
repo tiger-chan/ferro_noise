@@ -75,12 +75,12 @@ macro_rules! scale_builder {
 
 pub mod f32 {
     use crate::task::f32::{NameOrSource, Scale, TaskSource, TaskTree};
-    use crate::task::task::source_or_message;
+    use crate::task::source_or_message;
     scale_builder!(f32);
 }
 
 pub mod f64 {
     use crate::task::f64::{NameOrSource, Scale, TaskSource, TaskTree};
-    use crate::task::task::source_or_message;
+    use crate::task::source_or_message;
     scale_builder!(f64);
 }

@@ -92,7 +92,6 @@ mod test {
                     scale: 1.0.into(),
                     offset: 2.0.into(),
                     cached: true,
-                    ..Default::default()
                 })
             );
 
@@ -135,7 +134,6 @@ mod test {
                     scale: 1.0.into(),
                     offset: 2.0.into(),
                     cached: true,
-                    ..Default::default()
                 })
             );
 

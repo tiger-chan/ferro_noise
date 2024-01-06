@@ -37,7 +37,7 @@ macro_rules! aggregate_config {
 
         impl IntoTaskSource for AggregateConfig {
             fn config_into(&self, tree: &TaskTree) -> TaskSource {
-                let mut builder = AggregatorBuilder::new();
+                let mut builder = AggregatorBuilder::default();
 
                 builder.initial(self.initial).operation(self.operator);
 
@@ -100,7 +100,6 @@ mod test {
                     operator: Operation::Sub,
                     source: vec![1.0.into(), "other".to_owned().into()],
                     cached: true,
-                    ..Default::default()
                 })
             );
 
@@ -144,7 +143,6 @@ mod test {
                     operator: Operation::Sub,
                     source: vec![1.0.into(), "other".to_owned().into()],
                     cached: true,
-                    ..Default::default()
                 })
             );
 
