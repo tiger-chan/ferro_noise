@@ -273,7 +273,7 @@ macro_rules! cellular {
 
                 // Calculate normalized difference between distances
                 let noise_value = if distances[1] != 0.0 {
-                    (distances[0] - distances[1]) / distances[1]
+                    ((distances[0] - distances[1]) / distances[1]) * 2.0 + 1.0
                 } else {
                     0.0
                 };
@@ -314,7 +314,7 @@ macro_rules! cellular {
 
                 // Calculate normalized difference between distances
                 let noise_value = if distances[1] != 0.0 {
-                    (distances[0] - distances[1]) / distances[1]
+                    ((distances[0] - distances[1]) / distances[1]) * 2.0 + 1.0
                 } else {
                     0.0
                 };
@@ -361,7 +361,7 @@ macro_rules! cellular {
 
                 // Calculate normalized difference between distances
                 let noise_value = if distances[1] != 0.0 {
-                    (distances[0] - distances[1]) / distances[1]
+                    ((distances[0] - distances[1]) / distances[1]) * 2.0 + 1.0
                 } else {
                     0.0
                 };
@@ -392,7 +392,7 @@ pub mod f32 {
         fn work() {
             let mut cellular = Cellular::new([10.0, 10.0, 10.0], Distance::Euclidean);
             let x = cellular.sample_2d(5.0, 5.0);
-            assert_eq!(x, -0.017567515);
+            assert_eq!(x, 0.30970109);
         }
     }
 }
